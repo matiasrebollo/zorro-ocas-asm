@@ -42,9 +42,65 @@ section .data
         db      10
         db      "                                     ESCRIBE START PARA EMPEZAR",10,0
 
+    mensaje_bienvenida db "¡Bienvenido al juego El Zorro y las Ocas!", 10 
+                       db "Reglas básicas:", 10 
+                       db "El objetivo del juego es que el Zorro (X) capture al menos 12 ocas (O).", 10 
+                       db "Las ocas se mueven hacia adelante o hacia los lados, una casilla a la vez.", 10 
+                       db "El Zorro puede moverse en cualquier dirección una casilla a la vez (salvo que coma a una oca).", 10 
+                       db "Para comer una oca, el Zorro debe saltar sobre ella a una casilla vacía (puede hacer saltos multiples).", 10
+                       db "Es un movimiento por turno (comienza el zorro, luego las ocas) y solamente puede moverse una pieza por vez.", 10 
+                       db "El juego termina cuando el Zorro captura 12 ocas o queda acorralado.", 10 
+                       db "¡Que empiece la partida!", 10, 
+                       db "A continuacion se muestra el tablero:", 10, 0 
+
+    tablero db "#", "#", "O", "O", "O", "#", "#",10
+            db "#", "#", "O", "O", "O", "#", "#",10
+            db "O", "O", "O", "O", "O", "O", "O",10
+            db "O", " ", " ", " ", " ", " ", "O",10
+            db "O", " ", " ", "X", " ", " ", "O",10
+            db "#", "#", " ", " ", " ", "#", "#",10
+            db "#", "#", " ", " ", " ", "#", "#",10,0
+    
+    mensaje_turno_zorro db "Turno del zorro. Elija una posicion donde moverse:", 10, 0
+    opciones_movimiento db "1) IZQUIERDA",10
+                        db "2) DIAGONAL IZQUIERDA ARRIBA",10
+                        db "3) ARRIBA",10
+                        db "4) DIAGONAL DERECHA ARRIBA",10
+                        db "5) DERECHA",10
+                        db "6) DIAGONAL DERECHA ABAJO",10
+                        db "7) ABAJO",10
+                        db "8) DIAGONAL IZQUIERDA ABAJO",10,0
+
 section .text
 
 main:
-    mov     rdi, title
-    mPuts
+    sub rsp, 8
+    call imprimir_bienvenida
+    add rsp, 8
+
+    sub rsp,8
+    call imprimir_tablero
+    add rsp,8
+
+    sub rsp, 8
+    call imprimir_turno_zorro
+    add rsp, 8
+
     ret
+
+    imprimir_bienvenida: ;rutina que imprime el mensaje de bienvenida
+        mov rdi, mensaje_bienvenida
+        mPuts
+        ret
+
+    imprimir_tablero: ; rutina que imprime el tablero
+        mov rdi, tablero
+        mPuts
+        ret
+    
+    imprimir_turno_zorro: ; rutina que imprime el turno del zorro
+        mov rdi, mensaje_turno_zorro
+        mPuts
+        mov rdi, opciones_movimiento
+        mPuts
+        ret
