@@ -60,6 +60,10 @@ section .data
             db "O", " ", " ", "X", " ", " ", "O",10
             db "#", "#", " ", " ", " ", "#", "#",10
             db "#", "#", " ", " ", " ", "#", "#",10,0
+
+    zorro_x db 4
+    zorro_y db 5
+    
     
     mensaje_turno_zorro db "Turno del zorro. Elija una posicion donde moverse:", 10, 0
     opciones_movimiento db "1) IZQUIERDA",10
@@ -70,6 +74,10 @@ section .data
                         db "6) DIAGONAL DERECHA ABAJO",10
                         db "7) ABAJO",10
                         db "8) DIAGONAL IZQUIERDA ABAJO",10,0
+    mensaje_error_movimiento db "Por favor, elija un movimiento valido."
+
+section .bss
+    movimiento_zorro resb 10
 
 section .text
 
@@ -83,24 +91,91 @@ main:
     add rsp,8
 
     sub rsp, 8
-    call imprimir_turno_zorro
+    call turno_zorro
     add rsp, 8
 
     ret
 
     imprimir_bienvenida: ;rutina que imprime el mensaje de bienvenida
         mov rdi, mensaje_bienvenida
-        mPuts
+        sub rsp, 8
+        call puts
+        add rsp,8
         ret
 
     imprimir_tablero: ; rutina que imprime el tablero
         mov rdi, tablero
-        mPuts
+        sub rsp, 8
+        call puts
+        add rsp,8
         ret
     
-    imprimir_turno_zorro: ; rutina que imprime el turno del zorro
-        mov rdi, mensaje_turno_zorro
-        mPuts
-        mov rdi, opciones_movimiento
-        mPuts
+    ; obviamente todo esto tiene que estar adentro de un "while" hasta que termine el juego
+    turno_zorro: ; rutina que imprime el turno del zorro
+
+        mov rdi, mensaje_turno_zorro ; muestra el mensaje del turno del zorro
+        sub rsp, 8
+        call puts
+        add rsp, 8
+
+        mov rdi, opciones_movimiento ; muestra sus opciones de movimiento
+        sub rsp, 8
+        call puts
+        add rsp, 8
+
+        mov rdi, movimiento_zorro ; lee lo que ingresa el usuario
+        sub rsp,8
+        call gets
+        add rsp,8
+
+        mov al, byte[movimiento_zorro + 1]
+        cmp al, 0 ; verifica que se haya ingresado UN numero
+        jne lectura_invalida
+        mov al, byte[movimiento_zorro] ; chequeamos què movimiento ingreso el usuario, y saltamos a la rutina que realiza el movimiento
+        cmp al, "1"
+        je mover_izquierda
+        cmp al, "2"
+        je mover_izquierda_arriba
+        cmp al, "3"
+        je mover_arriba
+        cmp al, "4"
+        je mover_derecha_arriba
+        cmp al, "5"
+        je mover_derecha
+        cmp al, "6"
+        je mover_derecha_abajo
+        cmp al, "7"
+        je mover_abajo
+        cmp al, "8"
+        je mover_izquierda_abajo
+        lectura_invalida:
+            mov rdi, mensaje_error_movimiento
+            sub rsp,8
+            call puts
+            add rsp,8
+            jmp turno_zorro
+
+        ; queda implementarlas, chequeando la posicion donde caeria el zorro (osea viendo que no caiga en una pared, ni que caiga en una oca habiendo una atras)
+        ; cada vez que movemos el zorro hay que actualizar la matriz y actualizar zorro_x y zorro_y
+        ; tambien aca tendria que estar la implementacion de cuando el zorro come una oca, pero primero hagamos el movimiento
+        mover_izquierda:
+            ret
+        mover_izquierda_arriba:
+            ret
+        mover_arriba:
+            ret
+        mover_derecha_arriba:
+            ret
+        mover_derecha:
+            ret
+        mover_derecha_abajo:
+            ret
+        mover_abajo:
+            ret
+        mover_izquierda_abajo:
+            ret    
+
+        
+
         ret
+
