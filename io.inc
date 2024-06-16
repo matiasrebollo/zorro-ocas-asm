@@ -4,7 +4,7 @@
     add     rsp, 8
 %endmacro
 
-%macro get_input 0
+%macro mGets 0
     sub     rsp, 8
     call    gets 
     add     rsp, 8
