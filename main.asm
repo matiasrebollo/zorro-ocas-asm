@@ -4,22 +4,22 @@ global main
 
 section .data
     matrix:
-        db      "     A   B   C   D   E   F   G   H   I",10
-        db      "               ╔═══╦═══╦═══╗", 10
-        db      "1              ║ O ║ O ║ O ║", 10
-        db      "               ╠═══╬═══╬═══╣", 10
-        db      "2              ║ O ║ O ║ O ║", 10
-        db      "   ╔═══╦═══╦═══╬═══╬═══╬═══╬═══╦═══╦═══╗", 10
-        db      "3  ║ O ║ O ║ O ║ O ║ O ║ O ║ O ║ O ║ O ║", 10
-        db      "   ╠═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╣", 10
-        db      "4  ║ O ║   ║   ║   ║ x ║   ║   ║   ║ O ║", 10
-        db      "   ╠═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╣", 10
-        db      "5  ║ O ║   ║   ║   ║   ║   ║   ║   ║ O ║", 10
-        db      "   ╚═══╩═══╩═══╬═══╬═══╬═══╬═══╩═══╩═══╝", 10
-        db      "6              ║   ║   ║   ║", 10
-        db      "               ╠═══╬═══╬═══╣", 10
-        db      "7              ║   ║   ║   ║", 10
-        db      "               ╚═══╩═══╩═══╝", 10, 0
+        db      "     A   B   C   D   E   F   G   ",10
+        db      "           ╔═══╦═══╦═══╗", 10
+        db      "1          ║ O ║ O ║ O ║", 10
+        db      "           ╠═══╬═══╬═══╣", 10
+        db      "2          ║ O ║ O ║ O ║", 10
+        db      "   ╔═══╦═══╬═══╬═══╬═══╬═══╦═══╗", 10
+        db      "3  ║ O ║ O ║ O ║ O ║ O ║ O ║ O ║", 10
+        db      "   ╠═══╬═══╬═══╬═══╬═══╬═══╬═══╣", 10
+        db      "4  ║ O ║   ║   ║ x ║   ║   ║ O ║", 10
+        db      "   ╠═══╬═══╬═══╬═══╬═══╬═══╬═══╣", 10
+        db      "5  ║ O ║   ║   ║   ║   ║   ║ O ║", 10
+        db      "   ╚═══╩═══╬═══╬═══╬═══╬═══╩═══╝", 10
+        db      "6          ║   ║   ║   ║", 10
+        db      "           ╠═══╬═══╬═══╣", 10
+        db      "7          ║   ║   ║   ║", 10
+        db      "           ╚═══╩═══╩═══╝", 10, 0
 
     title:
         db      "           ______  ____       _                   _____",10
@@ -78,7 +78,7 @@ section .data
                         db "6) DIAGONAL DERECHA ABAJO",10
                         db "7) ABAJO",10
                         db "8) DIAGONAL IZQUIERDA ABAJO",10,0
-    mensaje_error_movimiento db "Por favor, elija un movimiento valido."
+    mensaje_error_movimiento db "Movimiento invalido! Intenta de nuevo...",10,0
 
 section .bss
     movimiento_zorro resb 10
