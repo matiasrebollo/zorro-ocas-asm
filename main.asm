@@ -104,120 +104,121 @@ game_loop:
 
     ret
 
-    imprimir_bienvenida: ;rutina que imprime el mensaje de bienvenida
-        mov rdi, mensaje_bienvenida
-        mPuts
-        ret
+imprimir_bienvenida: ;imprime el mensaje de bienvenida
+    mov rdi, mensaje_bienvenida
+    mPuts
+    ret
 
-    imprimir_tablero: ; rutina que imprime el tablero
-        mov rdi, tablero
-        mPuts
-        ret
-    
-    ; obviamente todo esto tiene que estar adentro de un "while" hasta que termine el juego
-    turno_zorro: ; rutina que imprime el turno del zorro
+imprimir_tablero: ;imprime el tablero
+    mov rdi, tablero
+    mPuts
+    ret
 
-        mov rdi, mensaje_turno_zorro ; muestra el mensaje del turno del zorro
-        mPuts
+turno_zorro: ;turno del zorro
+    mov rdi, mensaje_turno_zorro ; muestra el mensaje del turno del zorro
+    mPuts
+    mov rdi, opciones_movimiento ; muestra sus opciones de movimiento
+    mPuts
+    mov rdi, movimiento_zorro ; lee lo que ingresa el usuario
+    mGets
+    mov al, byte[movimiento_zorro + 1]
+    cmp al, 0 ; verifica que se haya ingresado UN numero
+    jne lectura_invalida
+    mov al, byte[movimiento_zorro] ; chequeamos què movimiento ingreso el usuario, y saltamos a la rutina que realiza el movimiento
+    cmp al, "1"
+    je mover_izquierda
+    cmp al, "2"
+    je mover_izquierda_arriba
+    cmp al, "3"
+    je mover_arriba
+    cmp al, "4"
+    je mover_derecha_arriba
+    cmp al, "5"
+    je mover_derecha
+    cmp al, "6"
+    je mover_derecha_abajo
+    cmp al, "7"
+    je mover_abajo
+    cmp al, "8"
+    je mover_izquierda_abajo
 
-        mov rdi, opciones_movimiento ; muestra sus opciones de movimiento
-        mPuts
+lectura_invalida:
+    mov rdi, mensaje_error_movimiento
+    mPuts
+    jmp turno_zorro
 
-        mov rdi, movimiento_zorro ; lee lo que ingresa el usuario
-        mGets
 
-        mov al, byte[movimiento_zorro + 1]
-        cmp al, 0 ; verifica que se haya ingresado UN numero
-        jne lectura_invalida
-        mov al, byte[movimiento_zorro] ; chequeamos què movimiento ingreso el usuario, y saltamos a la rutina que realiza el movimiento
-        cmp al, "1"
-        je mover_izquierda
-        cmp al, "2"
-        je mover_izquierda_arriba
-        cmp al, "3"
-        je mover_arriba
-        cmp al, "4"
-        je mover_derecha_arriba
-        cmp al, "5"
-        je mover_derecha
-        cmp al, "6"
-        je mover_derecha_abajo
-        cmp al, "7"
-        je mover_abajo
-        cmp al, "8"
-        je mover_izquierda_abajo
-        lectura_invalida:
-            mov rdi, mensaje_error_movimiento
-            mPuts
-            jmp turno_zorro
+; queda implementarlas, chequeando la posicion donde caeria el zorro (osea viendo que no caiga en una pared, ni que caiga en una oca habiendo una atras)
+; cada vez que movemos el zorro hay que actualizar la matriz y actualizar zorro_x y zorro_y
+; tambien aca tendria que estar la implementacion de cuando el zorro come una oca, pero primero hagamos el movimiento
+mover_izquierda:
+    mov eax, [zorro_new_pos]
+    sub eax,[mov_x] 
+    mov [zorro_new_pos],eax
+    jmp mover
+    ret
+mover_izquierda_arriba:
+    mov eax, [zorro_new_pos]
+    sub eax,[mov_x]
+    sub eax,[mov_y]
+    mov [zorro_new_pos],eax
+    jmp mover
+    ret
 
-        ; queda implementarlas, chequeando la posicion donde caeria el zorro (osea viendo que no caiga en una pared, ni que caiga en una oca habiendo una atras)
-        ; cada vez que movemos el zorro hay que actualizar la matriz y actualizar zorro_x y zorro_y
-        ; tambien aca tendria que estar la implementacion de cuando el zorro come una oca, pero primero hagamos el movimiento
-        mover_izquierda:
-            mov eax, [zorro_new_pos]
-            sub eax,[mov_x] 
-            mov [zorro_new_pos],eax
-            jmp mover
-            ret
-        mover_izquierda_arriba:
-            mov eax, [zorro_new_pos]
-            sub eax,[mov_x]
-            sub eax,[mov_y]
-            mov [zorro_new_pos],eax
-            jmp mover
-            ret
-        mover_arriba:
-            mov eax, [zorro_new_pos]
-            sub eax,[mov_y]
-            mov [zorro_new_pos],eax
-            jmp mover
-            ret
-        mover_derecha_arriba:
-            mov eax, [zorro_new_pos]
-            add eax,[mov_x]
-            sub eax,[mov_y]
-            mov [zorro_new_pos],eax
-            jmp mover
-            ret
-        mover_derecha:
-            mov eax, [zorro_new_pos]
-            add eax,[mov_x]
-            mov [zorro_new_pos],eax
-            jmp mover
-            ret
-        mover_derecha_abajo:
-            mov eax, [zorro_new_pos]
-            add eax,[mov_x]
-            add eax,[mov_y]
-            mov [zorro_new_pos],eax
-            jmp mover
-            ret
-        mover_abajo:
-            mov eax, [zorro_new_pos]
-            add eax,[mov_y]
-            mov [zorro_new_pos],eax
-            jmp mover
-            ret
-        mover_izquierda_abajo:
-            mov eax, [zorro_new_pos]
-            sub eax,[mov_x]
-            add eax,[mov_y]
-            mov [zorro_new_pos],eax
-            jmp mover
-            ret    
-        mover:
-            sub rdi,rdi
-            lea rdi,[tablero]
-            add edi,[zorro_pos]
-            mov byte[rdi],' '
-            lea rdi,[tablero]
-            add edi,[zorro_new_pos]
-            mov byte[rdi],'X'
+mover_arriba:
+    mov eax, [zorro_new_pos]
+    sub eax,[mov_y]
+    mov [zorro_new_pos],eax
+    jmp mover
+    ret
 
-            mov edi,[zorro_new_pos]
-            mov [zorro_pos],edi
-        
+mover_derecha_arriba:
+    mov eax, [zorro_new_pos]
+    add eax,[mov_x]
+    sub eax,[mov_y]
+    mov [zorro_new_pos],eax
+    jmp mover
+    ret
 
-        ret
+mover_derecha:
+    mov eax, [zorro_new_pos]
+    add eax,[mov_x]
+    mov [zorro_new_pos],eax
+    jmp mover
+    ret
 
+mover_derecha_abajo:
+    mov eax, [zorro_new_pos]
+    add eax,[mov_x]
+    add eax,[mov_y]
+    mov [zorro_new_pos],eax
+    jmp mover
+    ret
+
+mover_abajo:
+    mov eax, [zorro_new_pos]
+    add eax,[mov_y]
+    mov [zorro_new_pos],eax
+    jmp mover
+    ret
+
+mover_izquierda_abajo:
+    mov eax, [zorro_new_pos]
+    sub eax,[mov_x]
+    add eax,[mov_y]
+    mov [zorro_new_pos],eax
+    jmp mover
+    ret    
+
+mover:
+    sub rdi,rdi
+    lea rdi,[tablero]
+    add edi,[zorro_pos]
+    mov byte[rdi],' '
+    lea rdi,[tablero]
+    add edi,[zorro_new_pos]
+    mov byte[rdi],'X'
+    mov edi,[zorro_new_pos]
+    mov [zorro_pos],edi
+
+ret
