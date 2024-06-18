@@ -52,3 +52,6 @@ Este archivo contiene macros y funciones auxiliares para la entrada y salida (I/
 
 Para compilar y ejecutar el proyecto, seguir los siguientes pasos:
 
+nasm NOMBRE.asm -f elf64
+gcc nombre.o -no-pie -o nombre
+./nombre
