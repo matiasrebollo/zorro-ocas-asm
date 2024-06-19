@@ -63,8 +63,6 @@ section .data
         db "##   ##",10
         db "##   ##",10,0
 
-    zorro_x             db 4
-    zorro_y             db 5
     zorro_pos           dd 35
     zorro_new_pos       dd 35
     mov_x               db -1, 0, 1, -1, 0, 1, -1, 0, 1
@@ -134,15 +132,11 @@ section .text
         mGets
 
         ; leer la opcion de movimiento
-        mov al, byte[movimiento_zorro]
+        mov al, byte[movimiento_zorro + 1]
+        cmp al, 0 ; verifica que se haya mandado UN numero
+        jne movimiento_invalido
+        mov al, byte[movimiento_zorro + 1]
         sub al, '0'
-        cmp al, 1
-        jb movimiento_invalido
-        cmp al, 9
-        ja movimiento_invalido
-        cmp al, 5
-        je movimiento_invalido
-        
         ;determinar movimiento y saltar a la rutina adecuada
         cmp al, 1
         je mover_izquierda_abajo
@@ -162,11 +156,11 @@ section .text
         je mover_derecha_arriba
 
         ; validar y aplicar el movimiento
-        call validar_movimiento_zorro
-        test eax,eax
+        ;call validar_movimiento_zorro ; esta funcion y la de abajo deberian validarse dentro de la funcion 'mover'
+        ;test eax,eax
 
         ;si es valido aplicar
-        call aplicar_movimiento_zorro
+        ;call aplicar_movimiento_zorro
 
         jmp fin_turno_zorro
 
@@ -292,20 +286,17 @@ section .text
         ret    
 
     mover:
-        sub rdi,rdi
-        lea rdi,[tablero]
-        add rdi,[zorro_pos]
-        mov al, byte[rdi]
 
         lea rdi,[tablero]
         add rdi,[zorro_new_pos]
-        cmp byte[rdi], 'O'
+        cmp byte[rdi], 'O' 
         je come_oca ; ir a la rutina para comer la oca
-        
+        ; FALTA COMPARAR CON # PARA VER SI ES UNA PARED
         ; si no es una oca
         mov byte[rdi],'X'
         mov rdi,[zorro_new_pos]
         mov [zorro_pos],rdi
+        ; falta poner el espacio donde estaba antes el zorro en blanco
 
         ret
 
