@@ -54,17 +54,18 @@ section .data
         db "¡Que empiece la partida!", 10, 
         db "A continuacion se muestra el tablero:", 10, 0 
 
-    tablero:
-        db "##OOO##",10
-        db "##OOO##",10
-        db "OOOOOOO",10
-        db "O     O",10
-        db "O  X  O",10
-        db "##   ##",10
-        db "##   ##",10,0
+    tablero db "#", "#", "#", "#", "#", "#", "#", "#", "#",10
+            db "#", "#", "#", "O", "O", "O", "#", "#", "#",10
+            db "#", "#", "#", "O", "O", "O", "#", "#", "#",10
+            db "#", "O", "O", "O", "O", "O", "O", "O", "#",10
+            db "#", "O", " ", " ", " ", " ", " ", "O", "#",10
+            db "#", "O", " ", " ", "X", " ", " ", "O", "#",10
+            db "#", "#", "#", " ", " ", " ", "#", "#", "#",10
+            db "#", "#", "#", " ", " ", " ", "#", "#", "#",10
+            db "#", "#", "#", "#", "#", "#", "#", "#", "#",10,0
 
-    zorro_pos           dd 35
-    zorro_new_pos       dd 35
+    zorro_posicion dd 54
+    zorro_nueva_posicion dd 54
     mov_x               db -1, 0, 1, -1, 0, 1, -1, 0, 1
     mov_y               db 1, 1, 1, 0, 0, 0, -1, -1, -1
 
@@ -73,19 +74,17 @@ section .data
     
     mensaje_turno_zorro:
         db "Turno del zorro. Elija una posicion donde moverse:", 10, 0
-    opciones_movimiento:
-        db "1) Diagonal Izquierda Abajo",10
-        db "2) Abajo",10
-        db "3) Diagonal Derecha Abajo",10
-        db "4) Izquierda",10
-        db "5) Movimiento Invalido",10
-        db "6) Derecha",10
-        db "7) Diagonal Izquierda Arriba",10
-        db "8) Arriba",10
-        db "9) Diagonal Derecha Arriba",10,0
+    opciones_movimiento db "1) DIAGONAL IZQUIERDA ABAJO",10
+                        db "2) ABAJO",10
+                        db "3) DIAGONAL DERECHA ABAJO",10
+                        db "4) IZQUIERDA",10
+                        db "6) DERECHA",10
+                        db "7) DIAGONAL IZQUIERDA ARRIBA",10
+                        db "8) ARRIBA",10
+                        db "9) DIAGONAL DERECHA ARRIBA",10,0
 
-    mensaje_error_movimiento:
-        db "Movimiento invalido! Intenta de nuevo...",10,0
+    mensaje_error_movimiento db "Por favor, elija un movimiento valido.."
+    mensaje_error_pared db "No puedes moverte a una pared."
 
 section .bss
     movimiento_zorro resb 10
@@ -155,171 +154,105 @@ section .text
         cmp al, 9
         je mover_derecha_arriba
 
-        ; validar y aplicar el movimiento
-        ;call validar_movimiento_zorro ; esta funcion y la de abajo deberian validarse dentro de la funcion 'mover'
-        ;test eax,eax
+        mover_izquierda:
+            mov eax, [zorro_nueva_posicion]
+            sub eax, 1
+            mov [zorro_nueva_posicion], eax
+            jmp mover
+            
+        mover_izquierda_arriba:
+            mov eax, [zorro_nueva_posicion]
+            sub eax, 10 ; mueve fila hacia arriba
+            sub eax, 1
+            mov [zorro_nueva_posicion], eax
+            jmp mover
+            
+        mover_arriba:
+            mov al, [zorro_nueva_posicion]
+            sub al, 10
+            mov [zorro_nueva_posicion], al
+            jmp mover
+            
+        mover_derecha_arriba:
+            mov eax, [zorro_nueva_posicion]
+            add eax, 1
+            sub eax, 10
+            mov [zorro_nueva_posicion], eax
+            jmp mover
+            
+        mover_derecha:
+            mov eax, [zorro_nueva_posicion]
+            add eax, 1
+            mov [zorro_nueva_posicion], eax
+            jmp mover
+            
+        mover_derecha_abajo:
+            mov eax, [zorro_nueva_posicion]
+            add eax, 1
+            add eax, 10
+            mov [zorro_nueva_posicion], eax
+            jmp mover
+            
+        mover_abajo:
+            mov eax, [zorro_nueva_posicion]
+            add eax, 10
+            mov [zorro_nueva_posicion], eax
+            jmp mover
+            
+        mover_izquierda_abajo:
+            mov eax, [zorro_nueva_posicion]
+            sub eax, 1
+            add eax, 10
+            mov [zorro_nueva_posicion], eax
+            jmp mover
 
-        ;si es valido aplicar
-        ;call aplicar_movimiento_zorro
+        mover:
+            lea rdi, [tablero]
+            add edi, [zorro_nueva_posicion]
+            mov al, byte[rdi]
+            
+            cmp al, "#"
+            je mensaje_pared
+            cmp al, "O"
+            je comer_oca ; queda implementar acá como comer una oca, y la restriccion de que si atras hay otra oca o una pared, no se pueda comer
 
-        jmp fin_turno_zorro
+            mov byte[rdi], "X"
+            lea rdi, [tablero]
+            add edi, [zorro_posicion]
+            mov byte[rdi], " "
+            mov ebx, [zorro_nueva_posicion]
+            mov [zorro_posicion], ebx
+            ret
 
-    movimiento_invalido:
-        mov rdi, mensaje_error_movimiento
-        mPuts
-        jmp turno_zorro
+        mensaje_pared:
+            mov rdi, mensaje_error_pared
+            sub rsp,8
+            call puts
+            add rsp,8
+            mov ebx, [zorro_posicion]
+            mov [zorro_nueva_posicion], ebx
+            jmp game_loop
 
-    fin_turno_zorro:
-        ret
-
-    validar_movimiento_zorro:
-        ; calcula la nueva posición basada en el movimiento deseado
-        ; asumimos que la posición actual del zorro está en zorro_pos
-        mov eax, [zorro_pos]      ; la posición actual del zorro en la matriz lineal (0-48)
-        movzx ecx, al             ; guardamos la opción de movimiento en ecx
-        lea esi, [mov_x]          ; base de desplazamientos en x
-        lea edi, [mov_y]          ; base de desplazamientos en y
-
-        ; determinar la nueva posición usando los desplazamientos del numpad
-        movsx ebx, byte [esi + ecx - 1]
-        add eax, ebx
-        movsx ebx, byte [edi + ecx - 1]
-        add eax, ebx
-
-        ; guardar la nueva posición calculada en zorro_new_pos
-        mov [zorro_new_pos], eax
-
-        ; Validar que la nueva posición está dentro de los límites del tablero
-        mov esi, tablero      ; Cargar la dirección del tablero
-        add esi, eax        ; Obtener la nueva posición en el tablero
-
-        ; Verificar si la nueva posición es válida (no una casilla no válida "#")
-        cmp byte [esi], '#' 
-        je movimiento_invalido
-
-        ; Si es un espacio vacío (' ') o el Zorro mismo ('X'), el movimiento es válido
-        mov eax, 1
-        ret
-
-
-
-    aplicar_movimiento_zorro:
-
-        ; Aquí se debería implementar el código para actualizar el tablero y mover el zorro
-        ; Ejemplo: Actualizar la posición actual y la nueva posición en el tablero
-
-        ; Borrar la posición actual del zorro
-        mov eax, [zorro_pos]   ; La posición actual del zorro en la matriz lineal (0-48)
-        mov esi, tablero
-        add esi, eax
-        mov byte [esi], ' '    ; Limpiar la posición antigua del zorro
-
-        ; Colocar el zorro en la nueva posición
-        mov eax, [zorro_new_pos]   ; La nueva posición del zorro en la matriz lineal
-        mov esi, tablero
-        add esi, eax
-        mov byte [esi], 'X'    ; Colocar el zorro en la nueva posición
-
-        ; Actualizar la posición del zorro
-        mov [zorro_pos], eax
-
-        ret
-
-
-    mover_izquierda:
-        mov eax, [zorro_new_pos]
-        sub eax, 1 
-        mov [zorro_new_pos], eax
-        jmp mover
-        ret
-    mover_izquierda_arriba:
-        mov eax, [zorro_new_pos]
-        sub eax, 8 ; Mueve una fila hacia arriba
-        sub eax, 1 ; Mueve una columna hacia la izquierda
-        mov [zorro_new_pos], eax
-        jmp mover
-        ret
-
-    mover_arriba:
-        mov eax, [zorro_new_pos]
-        sub eax, 8
-        mov [zorro_new_pos], eax
-        jmp mover
-        ret
-
-    mover_derecha_arriba:
-        mov eax, [zorro_new_pos]
-        add eax, 1
-        sub eax, 8
-        mov [zorro_new_pos], eax
-        jmp mover
-        ret
-
-    mover_derecha:
-        mov eax, [zorro_new_pos]
-        add eax, 1
-        mov [zorro_new_pos], eax
-        jmp mover
-        ret
-
-    mover_derecha_abajo:
-        mov eax, [zorro_new_pos]
-        add eax, 8
-        add eax, 1
-        mov [zorro_new_pos], eax
-        jmp mover
-        ret
-
-    mover_abajo:
-        mov eax, [zorro_new_pos]
-        add eax, 8
-        mov [zorro_new_pos], eax
-        jmp mover
-        ret
-
-    mover_izquierda_abajo:
-        mov eax, [zorro_new_pos]
-        sub eax, 1
-        add eax, 8
-        mov [zorro_new_pos], eax
-        jmp mover
-        ret    
-
-    mover:
-
-        lea rdi,[tablero]
-        add rdi,[zorro_new_pos]
-        cmp byte[rdi], 'O' 
-        je come_oca ; ir a la rutina para comer la oca
-        ; FALTA COMPARAR CON # PARA VER SI ES UNA PARED
-        ; si no es una oca
-        mov byte[rdi],'X'
-        mov rdi,[zorro_new_pos]
-        mov [zorro_pos],rdi
-        ; falta poner el espacio donde estaba antes el zorro en blanco
-
-        ret
-
-    come_oca:
+    ;come_oca:
         ; Lógica para "comer" la oca: saltar sobre la oca
         ; Aquí debes implementar la lógica específica para comer una oca
         ; Por ejemplo, mover al zorro a la nueva posición y actualizar el tablero
 
         ; Actualizar el tablero: limpiar la posición de la oca
-        lea rdi, [tablero]
-        add rdi, [zorro_new_pos]
-        mov byte [rdi], ' '    ; Limpiar la posición de la oca
+        ;lea rdi, [tablero]
+        ;add rdi, [zorro_new_pos]
+        ;mov byte [rdi], ' '    ; Limpiar la posición de la oca
 
         ; Colocar al zorro en la nueva posición
-        mov rdi, [zorro_new_pos]
-        lea rdi, [tablero]
-        add rdi, rdi
-        mov byte [rdi], 'X'    ; Colocar al zorro en la nueva posición
+        ;mov rdi, [zorro_new_pos]
+        ;lea rdi, [tablero]
+        ;add rdi, rdi
+        ;mov byte [rdi], 'X'    ; Colocar al zorro en la nueva posición
 
         ; Actualizar la posición del zorro
-        mov [zorro_pos], rdi
+        ;mov [zorro_pos], rdi
 
         ; Incrementar el contador de ocas comidas (si llevas uno)
         ;inc [contador_ocas_comidas]
 
-        ret
+        ;ret
