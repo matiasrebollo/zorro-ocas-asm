@@ -66,8 +66,8 @@ section .data
 
     zorro_posicion dd 54
     zorro_nueva_posicion dd 54
-    mov_x               db -1, 0, 1, -1, 0, 1, -1, 0, 1
-    mov_y               db 1, 1, 1, 0, 0, 0, -1, -1, -1
+    mov_x               dd 1
+    mov_y               dd 10
 
     ; contador_ocas_comidas db 0
     
@@ -83,8 +83,8 @@ section .data
                         db "8) ARRIBA",10
                         db "9) DIAGONAL DERECHA ARRIBA",10,0
 
-    mensaje_error_movimiento db "Por favor, elija un movimiento valido.."
-    mensaje_error_pared db "No puedes moverte a una pared."
+    mensaje_error_movimiento db "Por favor, elija un movimiento valido.",10,0
+    mensaje_error_pared db "No puedes moverte a una pared.",10,0
 
 section .bss
     movimiento_zorro resb 10
@@ -131,78 +131,83 @@ section .text
         mGets
 
         ; leer la opcion de movimiento
+        sub rax,rax
         mov al, byte[movimiento_zorro + 1]
         cmp al, 0 ; verifica que se haya mandado UN numero
         jne movimiento_invalido
-        mov al, byte[movimiento_zorro + 1]
-        sub al, '0'
+        mov al, byte[movimiento_zorro]
         ;determinar movimiento y saltar a la rutina adecuada
-        cmp al, 1
+        cmp al, '1'
         je mover_izquierda_abajo
-        cmp al, 2
+        cmp al, '2'
         je mover_abajo
-        cmp al, 3
+        cmp al, '3'
         je mover_derecha_abajo
-        cmp al, 4
+        cmp al, '4'
         je mover_izquierda
-        cmp al, 6
+        cmp al, '6'
         je mover_derecha
-        cmp al, 7
+        cmp al, '7'
         je mover_izquierda_arriba
-        cmp al, 8
+        cmp al, '8'
         je mover_arriba
-        cmp al, 9
+        cmp al, '9'
         je mover_derecha_arriba
+
+        movimiento_invalido:
+            mov rdi, mensaje_error_movimiento
+            mPuts
+            jmp turno_zorro
 
         mover_izquierda:
             mov eax, [zorro_nueva_posicion]
-            sub eax, 1
+            sub eax, [mov_x]
             mov [zorro_nueva_posicion], eax
             jmp mover
             
         mover_izquierda_arriba:
             mov eax, [zorro_nueva_posicion]
-            sub eax, 10 ; mueve fila hacia arriba
-            sub eax, 1
+            sub eax, [mov_y] ; mueve fila hacia arriba
+            sub eax, [mov_x]
             mov [zorro_nueva_posicion], eax
             jmp mover
             
         mover_arriba:
-            mov al, [zorro_nueva_posicion]
-            sub al, 10
-            mov [zorro_nueva_posicion], al
+            mov eax, [zorro_nueva_posicion]
+            sub eax, [mov_y]
+            mov [zorro_nueva_posicion], eax
             jmp mover
             
         mover_derecha_arriba:
             mov eax, [zorro_nueva_posicion]
-            add eax, 1
-            sub eax, 10
+            add eax, [mov_x]
+            sub eax, [mov_y]
             mov [zorro_nueva_posicion], eax
             jmp mover
             
         mover_derecha:
             mov eax, [zorro_nueva_posicion]
-            add eax, 1
+            add eax, [mov_x]
             mov [zorro_nueva_posicion], eax
             jmp mover
             
         mover_derecha_abajo:
             mov eax, [zorro_nueva_posicion]
-            add eax, 1
-            add eax, 10
+            add eax, [mov_x]
+            add eax, [mov_y]
             mov [zorro_nueva_posicion], eax
             jmp mover
             
         mover_abajo:
             mov eax, [zorro_nueva_posicion]
-            add eax, 10
+            add eax, [mov_y]
             mov [zorro_nueva_posicion], eax
             jmp mover
             
         mover_izquierda_abajo:
             mov eax, [zorro_nueva_posicion]
-            sub eax, 1
-            add eax, 10
+            sub eax, [mov_x]
+            add eax, [mov_y]
             mov [zorro_nueva_posicion], eax
             jmp mover
 
@@ -214,7 +219,7 @@ section .text
             cmp al, "#"
             je mensaje_pared
             cmp al, "O"
-            je comer_oca ; queda implementar acá como comer una oca, y la restriccion de que si atras hay otra oca o una pared, no se pueda comer
+            ;je comer_oca ; queda implementar acá como comer una oca, y la restriccion de que si atras hay otra oca o una pared, no se pueda comer
 
             mov byte[rdi], "X"
             lea rdi, [tablero]
