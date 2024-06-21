@@ -69,6 +69,10 @@ section .data
     zorro_pos           dd 402
     zorro_nueva_pos     dd 402
     zorro_sig_pos       dd 402
+
+    oca_pos             dd 0
+    oca_nueva_pos       dd 0
+
     mov_x               dd 4
     mov_y               dd 70
 
@@ -77,21 +81,30 @@ section .data
     
     msg_turno_zorro:
         db "Turno del zorro. Elija una posicion donde moverse:", 10, 0
-    opciones_movimiento db "1) DIAGONAL IZQUIERDA ABAJO",10
-                        db "2) ABAJO",10
-                        db "3) DIAGONAL DERECHA ABAJO",10
-                        db "4) IZQUIERDA",10
-                        db "6) DERECHA",10
-                        db "7) DIAGONAL IZQUIERDA ARRIBA",10
-                        db "8) ARRIBA",10
-                        db "9) DIAGONAL DERECHA ARRIBA",10,0
-
-    msg_error_movimiento db "Por favor, elija un movimiento valido.",10,0
-    msg_error_pared db "No puedes moverte a una pared.",10,0
-    msg_no_puede_comer db "No hay espacio para comer a esa oca.",10,0
+    opciones_movimiento_zorro   db "1) DIAGONAL IZQUIERDA ABAJO",10
+                                db "2) ABAJO",10
+                                db "3) DIAGONAL DERECHA ABAJO",10
+                                db "4) IZQUIERDA",10
+                                db "6) DERECHA",10
+                                db "7) DIAGONAL IZQUIERDA ARRIBA",10
+                                db "8) ARRIBA",10
+                                db "9) DIAGONAL DERECHA ARRIBA",10,0
+    
+    msg_movimientos_oca         db "Elija una posicion donde moverse:", 10, 0
+    opciones_movimiento_oca:     
+                                db "2) ABAJO",10
+                                db "4) IZQUIERDA",10
+                                db "6) DERECHA",10,0
+    msg_error_movimiento    db "Por favor, elija un movimiento valido.",10,0
+    msg_error_pared         db "No puedes moverte a una pared.",10,0
+    msg_ocupada             db "No puedes moverte a una casilla ocupada",10,0
+    msg_no_puede_comer      db "No hay espacio para comer a esa oca.",10,0
+    msg_turno_oca           db "Escriba posicion de la oca a mover. Columna y fila.",10,0
+    msg_error_oca           db "Ingrese una posición válida. Primero Columna y luego fila. Sin espacios. Ej: C1",10,0
 
 section .bss
     movimiento_zorro resb 10
+    movimiento_oca   resb 10
 
 section .text
 
@@ -104,6 +117,10 @@ section .text
 
         sub rsp, 8
         call turno_zorro
+        add rsp, 8
+
+        sub rsp, 8
+        call turno_oca
         add rsp, 8
 
         jmp game_loop
@@ -129,50 +146,49 @@ section .text
         mov rdi, msg_turno_zorro ; muestra el msg del turno del zorro
         mPuts
         
-        mov rdi, opciones_movimiento ; muestra sus opciones de movimiento
+        mov rdi, opciones_movimiento_zorro ; muestra sus opciones de movimiento
         mPuts
         
         mov rdi, movimiento_zorro ; lee lo que ingresa el usuario
         mGets
 
         ; leer la opcion de movimiento
-        sub rax,rax
         mov al, byte[movimiento_zorro + 1]
         cmp al, 0 ; verifica que se haya mandado UN numero
-        jne movimiento_invalido
+        jne movimiento_invalido_zorro
         mov al, byte[movimiento_zorro]
         ;determinar movimiento y saltar a la rutina adecuada
         cmp al, '1'
-        je mover_izquierda_abajo
+        je mover_zorro_izquierda_abajo
         cmp al, '2'
-        je mover_abajo
+        je mover_zorro_abajo
         cmp al, '3'
-        je mover_derecha_abajo
+        je mover_zorro_derecha_abajo
         cmp al, '4'
-        je mover_izquierda
+        je mover_zorro_izquierda
         cmp al, '6'
-        je mover_derecha
+        je mover_zorro_derecha
         cmp al, '7'
-        je mover_izquierda_arriba
+        je mover_zorro_izquierda_arriba
         cmp al, '8'
-        je mover_arriba
+        je mover_zorro_arriba
         cmp al, '9'
-        je mover_derecha_arriba
+        je mover_zorro_derecha_arriba
 
-        movimiento_invalido:
+        movimiento_invalido_zorro:
             mov rdi, msg_error_movimiento
             mPuts
             jmp turno_zorro
 
-        mover_izquierda:
+        mover_zorro_izquierda:
             mov eax, [zorro_nueva_pos]
             sub eax, [mov_x]
             mov [zorro_nueva_pos], eax
             sub eax, [mov_x]
             mov [zorro_sig_pos], eax
-            jmp mover
+            jmp mover_zorro
             
-        mover_izquierda_arriba:
+        mover_zorro_izquierda_arriba:
             mov eax, [zorro_nueva_pos]
             sub eax, [mov_y] ; mueve fila hacia arriba
             sub eax, [mov_x]
@@ -180,17 +196,17 @@ section .text
             sub eax, [mov_y] 
             sub eax, [mov_x]
             mov [zorro_sig_pos], eax
-            jmp mover
+            jmp mover_zorro
             
-        mover_arriba:
+        mover_zorro_arriba:
             mov eax, [zorro_nueva_pos]
             sub eax, [mov_y]
             mov [zorro_nueva_pos], eax
             sub eax, [mov_y]
             mov [zorro_sig_pos], eax
-            jmp mover
+            jmp mover_zorro
             
-        mover_derecha_arriba:
+        mover_zorro_derecha_arriba:
             mov eax, [zorro_nueva_pos]
             add eax, [mov_x]
             sub eax, [mov_y]
@@ -198,17 +214,17 @@ section .text
             add eax, [mov_x]
             sub eax, [mov_y]
             mov [zorro_sig_pos], eax
-            jmp mover
+            jmp mover_zorro
             
-        mover_derecha:
+        mover_zorro_derecha:
             mov eax, [zorro_nueva_pos]
             add eax, [mov_x]
             mov [zorro_nueva_pos], eax
             add eax, [mov_x]
             mov [zorro_sig_pos], eax
-            jmp mover
+            jmp mover_zorro
             
-        mover_derecha_abajo:
+        mover_zorro_derecha_abajo:
             mov eax, [zorro_nueva_pos]
             add eax, [mov_x]
             add eax, [mov_y]
@@ -216,17 +232,17 @@ section .text
             add eax, [mov_x]
             add eax, [mov_y]
             mov [zorro_sig_pos], eax
-            jmp mover
+            jmp mover_zorro
             
-        mover_abajo:
+        mover_zorro_abajo:
             mov eax, [zorro_nueva_pos]
             add eax, [mov_y]
             mov [zorro_nueva_pos], eax
             add eax, [mov_y]
             mov [zorro_sig_pos], eax
-            jmp mover
+            jmp mover_zorro
             
-        mover_izquierda_abajo:
+        mover_zorro_izquierda_abajo:
             mov eax, [zorro_nueva_pos]
             sub eax, [mov_x]
             add eax, [mov_y]
@@ -234,17 +250,17 @@ section .text
             sub eax, [mov_x]
             add eax, [mov_y]
             mov [zorro_sig_pos], eax
-            jmp mover
+            jmp mover_zorro
 
-        mover:
+        mover_zorro:
             lea rdi, [matrix]
             add edi, [zorro_nueva_pos]
             mov al, byte[rdi]
             
             cmp al, '#'
-            je error_pared
+            je error_pared_zorro
             cmp al, 'O'
-            je comer_oca ; queda implementar acá como comer una oca, y la restriccion de que si atras hay otra oca o una pared, no se pueda comer
+            je comer_oca
 
             mov byte[rdi], 'X'
             lea rdi, [matrix]
@@ -254,7 +270,7 @@ section .text
             mov [zorro_pos], ebx
             ret
 
-        error_pared:
+        error_pared_zorro:
             mov rdi, msg_error_pared
             mPuts
             mov ebx, [zorro_pos]
@@ -292,27 +308,176 @@ section .text
             mov [zorro_nueva_pos], ebx
             jmp turno_zorro
 
+    turno_oca:
+        sub rsp,8
+        call imprimir_tablero
+        add rsp,8
 
-    ;come_oca:
-        ; Lógica para "comer" la oca: saltar sobre la oca
-        ; Aquí debes implementar la lógica específica para comer una oca
-        ; Por ejemplo, mover al zorro a la nueva posición y actualizar el tablero
+        mov rdi, msg_turno_oca
+        mPuts
 
-        ; Actualizar el tablero: limpiar la posición de la oca
-        ;lea rdi, [tablero]
-        ;add rdi, [zorro_new_pos]
-        ;mov byte [rdi], ' '    ; Limpiar la posición de la oca
+        mov rdi, movimiento_oca
+        mGets
 
-        ; Colocar al zorro en la nueva posición
-        ;mov rdi, [zorro_new_pos]
-        ;lea rdi, [tablero]
-        ;add rdi, rdi
-        ;mov byte [rdi], 'X'    ; Colocar al zorro en la nueva posición
+        mov al, byte[movimiento_oca + 2]
+        cmp al, 0 
+        jne pos_invalida
 
-        ; Actualizar la posición del zorro
-        ;mov [zorro_pos], rdi
+        input_columna:
+        mov al, byte[movimiento_oca] ;cargo columna
+        mov ebx, 110
+        cmp al, 'A'
+        je input_fila
+        cmp al, 'a'
+        je input_fila
+        mov ebx, 114
+        cmp al, 'B'
+        je input_fila
+        cmp al, 'b'
+        je input_fila
+        mov ebx, 118
+        cmp al, 'C'
+        je input_fila
+        cmp al, 'c'
+        je input_fila
+        mov ebx, 122
+        cmp al, 'D'
+        je input_fila
+        cmp al, 'd'
+        je input_fila
+        mov ebx, 126
+        cmp al, 'E'
+        je input_fila
+        cmp al, 'e'
+        je input_fila
+        mov ebx, 130
+        cmp al, 'F'
+        je input_fila
+        cmp al, 'f'
+        je input_fila
+        mov ebx, 134
+        cmp al, 'G'
+        je input_fila
+        cmp al, 'g'
+        je input_fila
 
-        ; Incrementar el contador de ocas comidas (si llevas uno)
-        ;inc [contador_ocas_comidas]
+        jmp pos_invalida
 
-        ;ret
+        input_fila:
+        mov al, byte[movimiento_oca + 1] ;cargo fila
+        cmp al, '1'
+        je pos_valida
+        add ebx, [mov_y]
+        cmp al, '2'
+        je pos_valida
+        add ebx, [mov_y]
+        cmp al, '3'
+        je pos_valida
+        add ebx, [mov_y]
+        cmp al, '4'
+        je pos_valida
+        add ebx, [mov_y]
+        cmp al, '5'
+        je pos_valida
+        add ebx, [mov_y]
+        cmp al, '6'
+        je pos_valida
+        add ebx, [mov_y]
+        cmp al, '7'
+        je pos_valida
+
+        pos_invalida:
+        mov rdi, msg_error_oca
+        mPuts
+        jmp turno_oca
+
+        pos_valida:
+        mov [oca_pos], ebx
+
+        lea rdi, [matrix]
+        add edi, [oca_pos]
+        mov al, byte[rdi]
+        cmp al, '#'
+        je pos_invalida
+
+        turno_mover_oca:    
+        sub rsp,8
+        call imprimir_tablero
+        add rsp,8
+
+        mov rdi, msg_movimientos_oca
+        mPuts
+        mov rdi, opciones_movimiento_oca
+        mPuts
+        mov rdi, movimiento_oca
+        mGets
+
+        mov al, byte[movimiento_oca + 1]
+        cmp al, 0 
+        jne mov_invalido_oca
+        mov al, byte[movimiento_oca]
+        cmp al, '2'
+        je mover_oca_abajo
+        cmp al, '4'
+        je mover_oca_izquierda
+        cmp al, '6'
+        je mover_oca_derecha
+
+        mov_invalido_oca:
+        mov rdi, msg_error_movimiento
+        mPuts
+        jmp turno_mover_oca
+
+        mover_oca_abajo:
+            mov eax, [oca_pos]
+            add eax, [mov_y]
+            mov [oca_nueva_pos], eax
+            jmp mover_oca
+
+        mover_oca_izquierda:
+            mov eax, [oca_pos]
+            sub eax, [mov_x]
+            mov [oca_nueva_pos], eax
+            jmp mover_oca
+        
+        mover_oca_derecha:
+            mov eax, [oca_pos]
+            add eax, [mov_x]
+            mov [oca_nueva_pos], eax
+            jmp mover_oca
+
+        mover_oca:
+            lea rdi, [matrix]
+            add edi, [oca_nueva_pos]
+            mov al, byte[rdi]
+
+            cmp al, '#'
+            je error_pared_oca
+            cmp al, 'O'
+            je casilla_ocupada
+            cmp al, 'X'
+            je casilla_ocupada
+
+            lea rdi, [matrix]
+            add edi, [oca_pos]
+            mov byte[rdi], ' '
+            lea rdi, [matrix]
+            add edi, [oca_nueva_pos]
+            mov byte[rdi], 'O'
+
+            ret
+
+        error_pared_oca:
+            mov rdi, msg_error_pared
+            mPuts
+            jmp turno_mover_oca
+        casilla_ocupada:
+            mov rdi, msg_ocupada
+            mPuts
+            jmp turno_mover_oca
+
+
+        ret
+;   TODO
+;   poder cerrar el juego en cualquier momento, en cada gets habría que checkar si input es igual a quit
+;   después de elegir la oca debería poder volver atrás y elegir otra
