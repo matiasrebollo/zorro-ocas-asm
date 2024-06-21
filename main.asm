@@ -69,6 +69,7 @@ section .data
     zorro_pos           dd 402
     zorro_nueva_pos     dd 402
     zorro_sig_pos       dd 402
+    zorro_acorralado    db 0 ;0 si al zorro le quedan movimientos validos, 1 si no.
 
     oca_pos             dd 0
     oca_nueva_pos       dd 0
@@ -134,8 +135,161 @@ section .text
         mPuts
         ret
 
+    gana_ocas:
+        mov rdi, msg_gana_ocas
         mPuts
         ret
+
+    check_zorro:
+        ; checkear si el zorro tiene movimientos 
+
+        ;izquierda
+        mov eax, [zorro_pos]
+        sub eax, [mov_x]
+        mov [zorro_nueva_pos], eax
+        sub eax, [mov_x]
+        mov [zorro_sig_pos], eax
+        sub rsp, 8
+        call validar_movimiento
+        add rsp, 8
+        cmp byte[zorro_acorralado], 0
+        je game_loop
+        
+        
+        ;izquierda arriba
+        mov eax, [zorro_pos]
+        sub eax, [mov_y] ; mueve fila hacia arriba
+        sub eax, [mov_x]
+        mov [zorro_nueva_pos], eax
+        sub eax, [mov_y] 
+        sub eax, [mov_x]
+        mov [zorro_sig_pos], eax
+        sub rsp, 8
+        call validar_movimiento
+        add rsp, 8
+        cmp byte[zorro_acorralado], 0
+        je game_loop
+        
+        
+        ;arriba
+        mov eax, [zorro_pos]
+        sub eax, [mov_y]
+        mov [zorro_nueva_pos], eax
+        sub eax, [mov_y]
+        mov [zorro_sig_pos], eax
+        sub rsp, 8
+        call validar_movimiento
+        add rsp, 8
+        cmp byte[zorro_acorralado], 0
+        je game_loop
+        
+
+        ;arriba derecha
+        mov eax, [zorro_pos]
+        add eax, [mov_x]
+        sub eax, [mov_y]
+        mov [zorro_nueva_pos], eax
+        add eax, [mov_x]
+        sub eax, [mov_y]
+        mov [zorro_sig_pos], eax
+        sub rsp, 8
+        call validar_movimiento
+        add rsp, 8
+        cmp byte[zorro_acorralado], 0
+        je game_loop
+        
+
+        ;derecha
+        mov eax, [zorro_pos]
+        add eax, [mov_x]
+        mov [zorro_nueva_pos], eax
+        add eax, [mov_x]
+        mov [zorro_sig_pos], eax
+        sub rsp, 8
+        call validar_movimiento
+        add rsp, 8
+        cmp byte[zorro_acorralado], 0
+        je game_loop
+        
+
+        ;derecha abajo
+        mov eax, [zorro_pos]
+        add eax, [mov_x]
+        add eax, [mov_y]
+        mov [zorro_nueva_pos], eax
+        add eax, [mov_x]
+        add eax, [mov_y]
+        mov [zorro_sig_pos], eax
+        sub rsp, 8
+        call validar_movimiento
+        add rsp, 8
+        cmp byte[zorro_acorralado], 0
+        je game_loop
+        
+
+        ;abajo
+        mov eax, [zorro_pos]
+        add eax, [mov_y]
+        mov [zorro_nueva_pos], eax
+        add eax, [mov_y]
+        mov [zorro_sig_pos], eax
+        sub rsp, 8
+        call validar_movimiento
+        add rsp, 8
+        cmp byte[zorro_acorralado], 0
+        je game_loop
+        
+
+        ;abajo izquierda
+        mov eax, [zorro_pos]
+        sub eax, [mov_x]
+        add eax, [mov_y]
+        mov [zorro_nueva_pos], eax
+        sub eax, [mov_x]
+        add eax, [mov_y]
+        mov [zorro_sig_pos], eax
+        sub rsp, 8
+        call validar_movimiento
+        add rsp, 8
+        cmp byte[zorro_acorralado], 0
+        je game_loop
+        
+        jmp gana_ocas
+
+
+
+
+
+
+
+
+
+    validar_movimiento:
+        lea rdi, [matrix]
+        add edi, [zorro_nueva_pos]
+        mov al, byte[rdi]
+        
+        cmp al, ' '
+        je validar_movimiento_true
+        cmp al, '#'
+        je validar_movimiento_false
+        
+        lea rdi, [matrix]
+        add edi, [zorro_sig_pos]
+        mov al, byte[rdi]
+        cmp al, '#'
+        je validar_movimiento_false
+        cmp al, 'O'
+        je validar_movimiento_false
+
+        validar_movimiento_true:
+            ret
+        validar_movimiento_false:
+            mov byte[zorro_acorralado],1
+            ret
+
+
+
 
     imprimir_tablero: ;imprime el tablero
         mov rdi, matrix
@@ -186,7 +340,7 @@ section .text
             jmp turno_zorro
 
         mover_zorro_izquierda:
-            mov eax, [zorro_nueva_pos]
+            mov eax, [zorro_pos]
             sub eax, [mov_x]
             mov [zorro_nueva_pos], eax
             sub eax, [mov_x]
@@ -194,7 +348,7 @@ section .text
             jmp mover_zorro
             
         mover_zorro_izquierda_arriba:
-            mov eax, [zorro_nueva_pos]
+            mov eax, [zorro_pos]
             sub eax, [mov_y] ; mueve fila hacia arriba
             sub eax, [mov_x]
             mov [zorro_nueva_pos], eax
@@ -204,7 +358,7 @@ section .text
             jmp mover_zorro
             
         mover_zorro_arriba:
-            mov eax, [zorro_nueva_pos]
+            mov eax, [zorro_pos]
             sub eax, [mov_y]
             mov [zorro_nueva_pos], eax
             sub eax, [mov_y]
@@ -212,7 +366,7 @@ section .text
             jmp mover_zorro
             
         mover_zorro_derecha_arriba:
-            mov eax, [zorro_nueva_pos]
+            mov eax, [zorro_pos]
             add eax, [mov_x]
             sub eax, [mov_y]
             mov [zorro_nueva_pos], eax
@@ -222,7 +376,7 @@ section .text
             jmp mover_zorro
             
         mover_zorro_derecha:
-            mov eax, [zorro_nueva_pos]
+            mov eax, [zorro_pos]
             add eax, [mov_x]
             mov [zorro_nueva_pos], eax
             add eax, [mov_x]
@@ -230,7 +384,7 @@ section .text
             jmp mover_zorro
             
         mover_zorro_derecha_abajo:
-            mov eax, [zorro_nueva_pos]
+            mov eax, [zorro_pos]
             add eax, [mov_x]
             add eax, [mov_y]
             mov [zorro_nueva_pos], eax
@@ -240,7 +394,7 @@ section .text
             jmp mover_zorro
             
         mover_zorro_abajo:
-            mov eax, [zorro_nueva_pos]
+            mov eax, [zorro_pos]
             add eax, [mov_y]
             mov [zorro_nueva_pos], eax
             add eax, [mov_y]
@@ -248,7 +402,7 @@ section .text
             jmp mover_zorro
             
         mover_zorro_izquierda_abajo:
-            mov eax, [zorro_nueva_pos]
+            mov eax, [zorro_pos]
             sub eax, [mov_x]
             add eax, [mov_y]
             mov [zorro_nueva_pos], eax
@@ -316,6 +470,9 @@ section .text
             mov [zorro_nueva_pos], ebx
             mov [zorro_nueva_pos], ebx
             jmp turno_zorro
+
+        fin_turno_zorro:
+            ret
 
     turno_oca:
         sub rsp,8
