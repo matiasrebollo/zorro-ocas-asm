@@ -399,6 +399,8 @@ section .text
         mov al, byte[rdi]
         cmp al, '#'
         je pos_invalida
+        cmp al, ' '
+        je pos_invalida
 
         turno_mover_oca:    
         sub rsp,8
