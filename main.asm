@@ -72,11 +72,10 @@ section .data
 
     oca_pos             dd 0
     oca_nueva_pos       dd 0
+    ocas_comidas        dd 0
 
     mov_x               dd 4
     mov_y               dd 70
-
-    ; contador_ocas_comidas db 0
     
     
     msg_turno_zorro:
@@ -95,12 +94,15 @@ section .data
                                 db "2) ABAJO",10
                                 db "4) IZQUIERDA",10
                                 db "6) DERECHA",10,0
-    msg_error_movimiento    db "Por favor, elija un movimiento valido.",10,0
-    msg_error_pared         db "No puedes moverte a una pared.",10,0
-    msg_ocupada             db "No puedes moverte a una casilla ocupada",10,0
-    msg_no_puede_comer      db "No hay espacio para comer a esa oca.",10,0
-    msg_turno_oca           db "Escriba posicion de la oca a mover. Columna y fila.",10,0
-    msg_error_oca           db "Ingrese una posición válida. Primero Columna y luego fila. Sin espacios. Ej: C1",10,0
+
+    msg_error_movimiento        db "Por favor, elija un movimiento valido.",10,0
+    msg_error_pared             db "No puedes moverte a una pared.",10,0
+    msg_ocupada                 db "No puedes moverte a una casilla ocupada",10,0
+    msg_no_puede_comer          db "No hay espacio para comer a esa oca.",10,0
+    msg_turno_oca               db "Escriba posicion de la oca a mover. Columna y fila.",10,0
+    msg_error_oca               db "Ingrese una posición válida. Primero Columna y luego fila. Sin espacios. Ej: C1",10,0
+    msg_gana_zorro              db "Gana zorro.",10,0
+    msg_gana_ocas               db "Gana ocas.",10,0
 
 section .bss
     movimiento_zorro resb 10
@@ -109,9 +111,8 @@ section .bss
 section .text
 
     main:
-        sub rsp, 8
-        call imprimir_bienvenida
-        add rsp, 8
+        mov rdi, msg_bienvenida
+        mPuts
 
     game_loop:
 
@@ -119,16 +120,20 @@ section .text
         call turno_zorro
         add rsp, 8
 
+        cmp dword[ocas_comidas], 12
+        jge gana_zorro
+
         sub rsp, 8
         call turno_oca
         add rsp, 8
 
         jmp game_loop
 
+    gana_zorro:
+        mov rdi, msg_gana_zorro 
+        mPuts
         ret
 
-    imprimir_bienvenida: ;imprime el msg de bienvenida
-        mov rdi, msg_bienvenida
         mPuts
         ret
 
@@ -297,6 +302,10 @@ section .text
             mov ebx, [zorro_sig_pos]
             mov [zorro_nueva_pos], ebx
             mov [zorro_pos], ebx
+
+            inc dword[ocas_comidas]
+            cmp dword[ocas_comidas],12
+            je  fin_turno_zorro
 
             jmp turno_zorro
 
@@ -480,6 +489,12 @@ section .text
 
 
         ret
+
+
+
+
+
+
 ;   TODO
 ;   poder cerrar el juego en cualquier momento, en cada gets habría que checkar si input es igual a quit
 ;   después de elegir la oca debería poder volver atrás y elegir otra
