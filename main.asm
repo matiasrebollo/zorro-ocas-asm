@@ -4,22 +4,24 @@ global main
 
 section .data
     matrix:
-        db      "     A   B   C   D   E   F   G   ",10
-        db      "           ╔═══╦═══╦═══╗", 10
-        db      "1          ║ O ║ O ║ O ║", 10
-        db      "           ╠═══╬═══╬═══╣", 10
-        db      "2          ║ O ║ O ║ O ║", 10
-        db      "   ╔═══╦═══╬═══╬═══╬═══╬═══╦═══╗", 10
-        db      "3  ║ O ║ O ║ O ║ O ║ O ║ O ║ O ║", 10
-        db      "   ╠═══╬═══╬═══╬═══╬═══╬═══╬═══╣", 10
-        db      "4  ║ O ║   ║   ║ x ║   ║   ║ O ║", 10
-        db      "   ╠═══╬═══╬═══╬═══╬═══╬═══╬═══╣", 10
-        db      "5  ║ O ║   ║   ║   ║   ║   ║ O ║", 10
-        db      "   ╚═══╩═══╬═══╬═══╬═══╬═══╩═══╝", 10
-        db      "6          ║   ║   ║   ║", 10
-        db      "           ╠═══╬═══╬═══╣", 10
-        db      "7          ║   ║   ║   ║", 10
-        db      "           ╚═══╩═══╩═══╝", 10, 0
+        db      "     A   B   C   D   E   F   G    ", 10
+        db      " #################################", 10
+        db      " ##########+-----------+##########", 10
+        db      "1##########| O | O | O |##########", 10
+        db      " ##########|---+---+---|##########", 10
+        db      "2##########| O | O | O |##########", 10
+        db      " ##+-------+---+---+---+-------+##", 10
+        db      "3##| O | O | O | O | O | O | O |##", 10
+        db      " ##|---+---+---+---+---+---+---|##", 10
+        db      "4##| O |   |   | x |   |   | O |##", 10
+        db      " ##|---+---+---+---+---+---+---|##", 10
+        db      "5##| O |   |   |   |   |   | O |##", 10
+        db      " ##+-------+---+---+---+-------+##", 10
+        db      "6##########|   |   |   |##########", 10
+        db      " ##########|---+---+---|##########", 10
+        db      "7##########|   |   |   |##########", 10
+        db      " ##########+-----------+##########", 10
+        db      " #################################", 10,0
 
     title:
         db      "           ______  ____       _                   _____",10
@@ -64,11 +66,11 @@ section .data
             db "#", "#", "#", " ", " ", " ", "#", "#", "#",10
             db "#", "#", "#", "#", "#", "#", "#", "#", "#",10,0
 
-    zorro_pos           dd 54
-    zorro_nueva_pos     dd 54
-    zorro_sig_pos       dd 54
-    mov_x               dd 1
-    mov_y               dd 10
+    zorro_pos           dd 332
+    zorro_nueva_pos     dd 332
+    zorro_sig_pos       dd 332
+    mov_x               dd 4
+    mov_y               dd 70
 
     ; contador_ocas_comidas db 0
     
@@ -114,7 +116,7 @@ section .text
         ret
 
     imprimir_tablero: ;imprime el tablero
-        mov rdi, tablero
+        mov rdi, matrix
         mPuts
         ret
 
@@ -235,7 +237,7 @@ section .text
             jmp mover
 
         mover:
-            lea rdi, [tablero]
+            lea rdi, [matrix]
             add edi, [zorro_nueva_pos]
             mov al, byte[rdi]
             
@@ -245,7 +247,7 @@ section .text
             je comer_oca ; queda implementar acá como comer una oca, y la restriccion de que si atras hay otra oca o una pared, no se pueda comer
 
             mov byte[rdi], 'X'
-            lea rdi, [tablero]
+            lea rdi, [matrix]
             add edi, [zorro_pos]
             mov byte[rdi], ' '
             mov ebx, [zorro_nueva_pos]
@@ -260,7 +262,7 @@ section .text
             jmp turno_zorro
         
         comer_oca:
-            lea rdi, [tablero]
+            lea rdi, [matrix]
             add edi, [zorro_sig_pos]
             mov al, byte[rdi]
             cmp al, '#'
@@ -269,10 +271,10 @@ section .text
             je no_puede_comer
 
             mov byte[rdi], 'X'
-            lea rdi, [tablero]
+            lea rdi, [matrix]
             add edi, [zorro_nueva_pos]
             mov byte[rdi], ' '
-            lea rdi, [tablero]
+            lea rdi, [matrix]
             add edi, [zorro_pos]
             mov byte[rdi], ' '
 
