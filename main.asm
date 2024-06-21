@@ -42,7 +42,7 @@ section .data
         db      "",10
         db      "                                     ESCRIBE START PARA EMPEZAR",10,0
 
-    mensaje_bienvenida:
+    msg_bienvenida:
         db "¡Bienvenido al juego El Zorro y las Ocas!", 10 
         db "Reglas básicas:", 10 
         db "El objetivo del juego es que el Zorro (X) capture al menos 12 ocas (O).", 10 
@@ -64,15 +64,16 @@ section .data
             db "#", "#", "#", " ", " ", " ", "#", "#", "#",10
             db "#", "#", "#", "#", "#", "#", "#", "#", "#",10,0
 
-    zorro_posicion dd 54
-    zorro_nueva_posicion dd 54
+    zorro_pos           dd 54
+    zorro_nueva_pos     dd 54
+    zorro_sig_pos       dd 54
     mov_x               dd 1
     mov_y               dd 10
 
     ; contador_ocas_comidas db 0
     
     
-    mensaje_turno_zorro:
+    msg_turno_zorro:
         db "Turno del zorro. Elija una posicion donde moverse:", 10, 0
     opciones_movimiento db "1) DIAGONAL IZQUIERDA ABAJO",10
                         db "2) ABAJO",10
@@ -83,8 +84,9 @@ section .data
                         db "8) ARRIBA",10
                         db "9) DIAGONAL DERECHA ARRIBA",10,0
 
-    mensaje_error_movimiento db "Por favor, elija un movimiento valido.",10,0
-    mensaje_error_pared db "No puedes moverte a una pared.",10,0
+    msg_error_movimiento db "Por favor, elija un movimiento valido.",10,0
+    msg_error_pared db "No puedes moverte a una pared.",10,0
+    msg_no_puede_comer db "No hay espacio para comer a esa oca.",10,0
 
 section .bss
     movimiento_zorro resb 10
@@ -98,10 +100,6 @@ section .text
 
     game_loop:
 
-        sub rsp,8
-        call imprimir_tablero
-        add rsp,8
-
         sub rsp, 8
         call turno_zorro
         add rsp, 8
@@ -110,8 +108,8 @@ section .text
 
         ret
 
-    imprimir_bienvenida: ;imprime el mensaje de bienvenida
-        mov rdi, mensaje_bienvenida
+    imprimir_bienvenida: ;imprime el msg de bienvenida
+        mov rdi, msg_bienvenida
         mPuts
         ret
 
@@ -121,7 +119,12 @@ section .text
         ret
 
     turno_zorro: ;turno del zorro
-        mov rdi, mensaje_turno_zorro ; muestra el mensaje del turno del zorro
+
+        sub rsp,8
+        call imprimir_tablero
+        add rsp,8
+
+        mov rdi, msg_turno_zorro ; muestra el msg del turno del zorro
         mPuts
         
         mov rdi, opciones_movimiento ; muestra sus opciones de movimiento
@@ -155,88 +158,138 @@ section .text
         je mover_derecha_arriba
 
         movimiento_invalido:
-            mov rdi, mensaje_error_movimiento
+            mov rdi, msg_error_movimiento
             mPuts
             jmp turno_zorro
 
         mover_izquierda:
-            mov eax, [zorro_nueva_posicion]
+            mov eax, [zorro_nueva_pos]
             sub eax, [mov_x]
-            mov [zorro_nueva_posicion], eax
+            mov [zorro_nueva_pos], eax
+            sub eax, [mov_x]
+            mov [zorro_sig_pos], eax
             jmp mover
             
         mover_izquierda_arriba:
-            mov eax, [zorro_nueva_posicion]
+            mov eax, [zorro_nueva_pos]
             sub eax, [mov_y] ; mueve fila hacia arriba
             sub eax, [mov_x]
-            mov [zorro_nueva_posicion], eax
+            mov [zorro_nueva_pos], eax
+            sub eax, [mov_y] 
+            sub eax, [mov_x]
+            mov [zorro_sig_pos], eax
             jmp mover
             
         mover_arriba:
-            mov eax, [zorro_nueva_posicion]
+            mov eax, [zorro_nueva_pos]
             sub eax, [mov_y]
-            mov [zorro_nueva_posicion], eax
+            mov [zorro_nueva_pos], eax
+            sub eax, [mov_y]
+            mov [zorro_sig_pos], eax
             jmp mover
             
         mover_derecha_arriba:
-            mov eax, [zorro_nueva_posicion]
+            mov eax, [zorro_nueva_pos]
             add eax, [mov_x]
             sub eax, [mov_y]
-            mov [zorro_nueva_posicion], eax
+            mov [zorro_nueva_pos], eax
+            add eax, [mov_x]
+            sub eax, [mov_y]
+            mov [zorro_sig_pos], eax
             jmp mover
             
         mover_derecha:
-            mov eax, [zorro_nueva_posicion]
+            mov eax, [zorro_nueva_pos]
             add eax, [mov_x]
-            mov [zorro_nueva_posicion], eax
+            mov [zorro_nueva_pos], eax
+            add eax, [mov_x]
+            mov [zorro_sig_pos], eax
             jmp mover
             
         mover_derecha_abajo:
-            mov eax, [zorro_nueva_posicion]
+            mov eax, [zorro_nueva_pos]
             add eax, [mov_x]
             add eax, [mov_y]
-            mov [zorro_nueva_posicion], eax
+            mov [zorro_nueva_pos], eax
+            add eax, [mov_x]
+            add eax, [mov_y]
+            mov [zorro_sig_pos], eax
             jmp mover
             
         mover_abajo:
-            mov eax, [zorro_nueva_posicion]
+            mov eax, [zorro_nueva_pos]
             add eax, [mov_y]
-            mov [zorro_nueva_posicion], eax
+            mov [zorro_nueva_pos], eax
+            add eax, [mov_y]
+            mov [zorro_sig_pos], eax
             jmp mover
             
         mover_izquierda_abajo:
-            mov eax, [zorro_nueva_posicion]
+            mov eax, [zorro_nueva_pos]
             sub eax, [mov_x]
             add eax, [mov_y]
-            mov [zorro_nueva_posicion], eax
+            mov [zorro_nueva_pos], eax
+            sub eax, [mov_x]
+            add eax, [mov_y]
+            mov [zorro_sig_pos], eax
             jmp mover
 
         mover:
             lea rdi, [tablero]
-            add edi, [zorro_nueva_posicion]
+            add edi, [zorro_nueva_pos]
             mov al, byte[rdi]
             
-            cmp al, "#"
-            je mensaje_pared
-            cmp al, "O"
-            ;je comer_oca ; queda implementar acá como comer una oca, y la restriccion de que si atras hay otra oca o una pared, no se pueda comer
+            cmp al, '#'
+            je error_pared
+            cmp al, 'O'
+            je comer_oca ; queda implementar acá como comer una oca, y la restriccion de que si atras hay otra oca o una pared, no se pueda comer
 
-            mov byte[rdi], "X"
+            mov byte[rdi], 'X'
             lea rdi, [tablero]
-            add edi, [zorro_posicion]
-            mov byte[rdi], " "
-            mov ebx, [zorro_nueva_posicion]
-            mov [zorro_posicion], ebx
+            add edi, [zorro_pos]
+            mov byte[rdi], ' '
+            mov ebx, [zorro_nueva_pos]
+            mov [zorro_pos], ebx
             ret
 
-        mensaje_pared:
-            mov rdi, mensaje_error_pared
-            sub rsp,8
-            call puts
-            add rsp,8
-            mov ebx, [zorro_posicion]
-            mov [zorro_nueva_posicion], ebx
-            jmp game_loop
+        error_pared:
+            mov rdi, msg_error_pared
+            mPuts
+            mov ebx, [zorro_pos]
+            mov [zorro_nueva_pos], ebx
+            jmp turno_zorro
+        
+        comer_oca:
+            lea rdi, [tablero]
+            add edi, [zorro_sig_pos]
+            mov al, byte[rdi]
+            cmp al, '#'
+            je no_puede_comer
+            cmp al, 'O'
+            je no_puede_comer
+
+            mov byte[rdi], 'X'
+            lea rdi, [tablero]
+            add edi, [zorro_nueva_pos]
+            mov byte[rdi], ' '
+            lea rdi, [tablero]
+            add edi, [zorro_pos]
+            mov byte[rdi], ' '
+
+            mov ebx, [zorro_sig_pos]
+            mov [zorro_nueva_pos], ebx
+            mov [zorro_pos], ebx
+
+            jmp turno_zorro
+
+        no_puede_comer:
+            mov rdi, msg_no_puede_comer
+            mPuts
+            mov ebx, [zorro_pos]
+            mov [zorro_nueva_pos], ebx
+            mov [zorro_nueva_pos], ebx
+            jmp turno_zorro
+
 
     ;come_oca:
         ; Lógica para "comer" la oca: saltar sobre la oca
