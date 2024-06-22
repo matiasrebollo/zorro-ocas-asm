@@ -482,7 +482,7 @@ section .text
         mov rdi, msg_turno_oca ; se imprime el mensaje del turno de la oca
         mPuts
 
-        mov rdi, movimiento_oca
+        mov rdi, movimiento_oca ; se lee la oca seleccionada
         mGets
 
         mov al, byte[movimiento_oca + 2]
@@ -527,7 +527,7 @@ section .text
         cmp al, 'g'
         je input_fila
 
-        jmp pos_invalida
+        jmp pos_invalida ; si no se selecciono ninguna de las anteriores es invalido
 
         input_fila:
         mov al, byte[movimiento_oca + 1] ;cargo fila
@@ -552,8 +552,8 @@ section .text
         cmp al, '7'
         je pos_valida
 
-        pos_invalida:
-        mov rdi, msg_error_oca
+        pos_invalida: ; no se selecciono algo valido y vuelve a ser turno de la oca
+        mov rdi, msg_error_oca 
         mPuts
         jmp turno_oca
 
@@ -564,20 +564,20 @@ section .text
         add edi, [oca_pos]
         mov al, byte[rdi]
         cmp al, '#'
-        je pos_invalida
+        je pos_invalida ; si la posicion seleccionada es una pared es invalido
         cmp al, ' '
-        je pos_invalida
+        je pos_invalida ; si la posicion seleccionada esta vacia es invalido
 
         turno_mover_oca:    
         sub rsp,8
         call imprimir_tablero
         add rsp,8
 
-        mov rdi, msg_movimientos_oca
+        mov rdi, msg_movimientos_oca ; se le muestran los movimientos a la oca
         mPuts
         mov rdi, opciones_movimiento_oca
         mPuts
-        mov rdi, movimiento_oca
+        mov rdi, movimiento_oca ; se lee el movimiento
         mGets
 
         mov al, byte[movimiento_oca + 1]
@@ -591,7 +591,7 @@ section .text
         cmp al, '6'
         je mover_oca_derecha
 
-        mov_invalido_oca:
+        mov_invalido_oca: ; si se llega aca el movimiento escrito es invalido
         mov rdi, msg_error_movimiento
         mPuts
         jmp turno_mover_oca
@@ -599,39 +599,39 @@ section .text
         mover_oca_abajo:
             mov eax, [oca_pos]
             add eax, [mov_y]
-            mov [oca_nueva_pos], eax
+            mov [oca_nueva_pos], eax ; nos guardamos la nueva posicion de la oca 
             jmp mover_oca
 
         mover_oca_izquierda:
             mov eax, [oca_pos]
             sub eax, [mov_x]
-            mov [oca_nueva_pos], eax
+            mov [oca_nueva_pos], eax ; nos guardamos la nueva posicion de la oca
             jmp mover_oca
         
         mover_oca_derecha:
             mov eax, [oca_pos]
             add eax, [mov_x]
-            mov [oca_nueva_pos], eax
+            mov [oca_nueva_pos], eax ; nos guardamos la nueva posicion de la oca
             jmp mover_oca
 
         mover_oca:
             lea rdi, [matrix]
             add edi, [oca_nueva_pos]
-            mov al, byte[rdi]
+            mov al, byte[rdi] ; nos fijamos que hay en esa nueva posicion
 
-            cmp al, '#'
+            cmp al, '#' ; si hay una pared no se puede
             je error_pared_oca
-            cmp al, 'O'
+            cmp al, 'O' ; si hay otra oca esta ocupada
             je casilla_ocupada
-            cmp al, 'X'
+            cmp al, 'X' ; si esta el zorro esta ocupada
             je casilla_ocupada
 
             lea rdi, [matrix]
             add edi, [oca_pos]
-            mov byte[rdi], ' '
+            mov byte[rdi], ' ' ; borramos la posicion antigua de la oca
             lea rdi, [matrix]
             add edi, [oca_nueva_pos]
-            mov byte[rdi], 'O'
+            mov byte[rdi], 'O' ; colocamos la oca en su nueva posicion
 
             ret
 
