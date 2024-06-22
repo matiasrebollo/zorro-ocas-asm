@@ -563,6 +563,8 @@ section .text
         lea rdi, [matrix]
         add edi, [oca_pos]
         mov al, byte[rdi]
+        cmp al, 'X'
+        je pos_invalida ; si la posicion seleccionada está el zorro es invalido
         cmp al, '#'
         je pos_invalida ; si la posicion seleccionada es una pared es invalido
         cmp al, ' '
@@ -638,11 +640,11 @@ section .text
         error_pared_oca:
             mov rdi, msg_error_pared
             mPuts
-            jmp turno_mover_oca
+            jmp turno_oca
         casilla_ocupada:
             mov rdi, msg_ocupada
             mPuts
-            jmp turno_mover_oca
+            jmp turno_oca
 
 
         ret
