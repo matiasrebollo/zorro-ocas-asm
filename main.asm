@@ -112,26 +112,26 @@ section .bss
 section .text
 
     main:
-        mov rdi, msg_bienvenida
+        mov rdi, msg_bienvenida ;printeamos bienvenida al juego
         mPuts
 
     game_loop:
 
         sub rsp, 8
-        call turno_zorro
+        call turno_zorro ; el juego comienza con el turno del zorro
         add rsp, 8
 
-        cmp dword[ocas_comidas], 12
+        cmp dword[ocas_comidas], 12 ; si ya comimos 12 ocas gana el zorro
         jge gana_zorro
 
         sub rsp, 8
-        call turno_oca
+        call turno_oca ; luego es el turno de las ocas
         add rsp, 8
 
         jmp game_loop
 
     gana_zorro:
-        mov rdi, msg_gana_zorro 
+        mov rdi, msg_gana_zorro ; se imprime que gano el zorro
         mPuts
         ret
 
@@ -299,7 +299,7 @@ section .text
     turno_zorro: ;turno del zorro
 
         sub rsp,8
-        call imprimir_tablero
+        call imprimir_tablero ;imprimimos el tablero
         add rsp,8
 
         mov rdi, msg_turno_zorro ; muestra el msg del turno del zorro
@@ -334,7 +334,7 @@ section .text
         cmp al, '9'
         je mover_zorro_derecha_arriba
 
-        movimiento_invalido_zorro:
+        movimiento_invalido_zorro: ;si llegamos aca es porque el usuario no ingreso un movimiento valido
             mov rdi, msg_error_movimiento
             mPuts
             jmp turno_zorro
@@ -342,126 +342,126 @@ section .text
         mover_zorro_izquierda:
             mov eax, [zorro_pos]
             sub eax, [mov_x]
-            mov [zorro_nueva_pos], eax
+            mov [zorro_nueva_pos], eax ;movemos a izquierda
             sub eax, [mov_x]
-            mov [zorro_sig_pos], eax
+            mov [zorro_sig_pos], eax ; nos guardamos la siguiente posicion
             jmp mover_zorro
             
         mover_zorro_izquierda_arriba:
             mov eax, [zorro_pos]
             sub eax, [mov_y] ; mueve fila hacia arriba
             sub eax, [mov_x]
-            mov [zorro_nueva_pos], eax
+            mov [zorro_nueva_pos], eax ;movemos izquierda arriba
             sub eax, [mov_y] 
             sub eax, [mov_x]
-            mov [zorro_sig_pos], eax
+            mov [zorro_sig_pos], eax ; nos guardamos la siguiente posicion
             jmp mover_zorro
             
         mover_zorro_arriba:
             mov eax, [zorro_pos]
             sub eax, [mov_y]
-            mov [zorro_nueva_pos], eax
+            mov [zorro_nueva_pos], eax; movemos arriba
             sub eax, [mov_y]
-            mov [zorro_sig_pos], eax
+            mov [zorro_sig_pos], eax ; nos guardamos la siguiente posicion
             jmp mover_zorro
             
         mover_zorro_derecha_arriba:
             mov eax, [zorro_pos]
             add eax, [mov_x]
             sub eax, [mov_y]
-            mov [zorro_nueva_pos], eax
+            mov [zorro_nueva_pos], eax ; movemos derecha arriba
             add eax, [mov_x]
             sub eax, [mov_y]
-            mov [zorro_sig_pos], eax
+            mov [zorro_sig_pos], eax; nos guardamos la siguiente posicion
             jmp mover_zorro
             
         mover_zorro_derecha:
             mov eax, [zorro_pos]
             add eax, [mov_x]
-            mov [zorro_nueva_pos], eax
+            mov [zorro_nueva_pos], eax ; movemos derecha
             add eax, [mov_x]
-            mov [zorro_sig_pos], eax
+            mov [zorro_sig_pos], eax ; nos guardamos la siguiente posicion
             jmp mover_zorro
             
         mover_zorro_derecha_abajo:
             mov eax, [zorro_pos]
             add eax, [mov_x]
             add eax, [mov_y]
-            mov [zorro_nueva_pos], eax
+            mov [zorro_nueva_pos], eax ; movemos derecha abajo
             add eax, [mov_x]
             add eax, [mov_y]
-            mov [zorro_sig_pos], eax
+            mov [zorro_sig_pos], eax ; nos guardamos la siguiente posicion
             jmp mover_zorro
             
         mover_zorro_abajo:
             mov eax, [zorro_pos]
             add eax, [mov_y]
-            mov [zorro_nueva_pos], eax
+            mov [zorro_nueva_pos], eax ; movemos abajo
             add eax, [mov_y]
-            mov [zorro_sig_pos], eax
+            mov [zorro_sig_pos], eax ; nos guardamos la siguiente posicion
             jmp mover_zorro
             
         mover_zorro_izquierda_abajo:
             mov eax, [zorro_pos]
             sub eax, [mov_x]
             add eax, [mov_y]
-            mov [zorro_nueva_pos], eax
+            mov [zorro_nueva_pos], eax ; movemos izquierda abajo
             sub eax, [mov_x]
             add eax, [mov_y]
-            mov [zorro_sig_pos], eax
+            mov [zorro_sig_pos], eax ; nos guardamos la siguiente posicion
             jmp mover_zorro
 
         mover_zorro:
-            lea rdi, [matrix]
-            add edi, [zorro_nueva_pos]
-            mov al, byte[rdi]
+            lea rdi, [matrix]; nos paramos en la matriz
+            add edi, [zorro_nueva_pos]; avanzamos
+            mov al, byte[rdi]; nos guardamos lo que hay en esa posicion
             
             cmp al, '#'
-            je error_pared_zorro
+            je error_pared_zorro ; si hay pared no se puede mover
             cmp al, 'O'
-            je comer_oca
+            je comer_oca ; si hay oca es un caso a ver
 
-            mov byte[rdi], 'X'
+            mov byte[rdi], 'X' ;si no hay nada, movemos el zorro
             lea rdi, [matrix]
             add edi, [zorro_pos]
-            mov byte[rdi], ' '
+            mov byte[rdi], ' ' ; eliminamos nuestra antigua posicion
             mov ebx, [zorro_nueva_pos]
-            mov [zorro_pos], ebx
+            mov [zorro_pos], ebx ;actualizamos la posicion del zorro
             ret
 
         error_pared_zorro:
             mov rdi, msg_error_pared
             mPuts
             mov ebx, [zorro_pos]
-            mov [zorro_nueva_pos], ebx
+            mov [zorro_nueva_pos], ebx; deshacemos el movimiento y vuelve a ser turno del zorro
             jmp turno_zorro
         
         comer_oca:
             lea rdi, [matrix]
-            add edi, [zorro_sig_pos]
+            add edi, [zorro_sig_pos] ; vemos que hay atras de la oca
             mov al, byte[rdi]
             cmp al, '#'
-            je no_puede_comer
+            je no_puede_comer ; si hay pared no se puede comer
             cmp al, 'O'
-            je no_puede_comer
+            je no_puede_comer ; si hay oca no se puede comer
 
-            mov byte[rdi], 'X'
+            mov byte[rdi], 'X' ;movemos al zorro
             lea rdi, [matrix]
             add edi, [zorro_nueva_pos]
-            mov byte[rdi], ' '
+            mov byte[rdi], ' ' ; eliminamos la oca
             lea rdi, [matrix]
             add edi, [zorro_pos]
-            mov byte[rdi], ' '
+            mov byte[rdi], ' ' ; eliminamos nuestra antigua posicion
 
             mov ebx, [zorro_sig_pos]
             mov [zorro_nueva_pos], ebx
-            mov [zorro_pos], ebx
+            mov [zorro_pos], ebx ;actualizamos posicion del zorro
 
-            inc dword[ocas_comidas]
-            cmp dword[ocas_comidas],12
+            inc dword[ocas_comidas] ; aumentamos en 1 las ocas comidas
+            cmp dword[ocas_comidas],12 ; si ya son 12 termina el turno del zorro
             je  fin_turno_zorro
 
-            jmp turno_zorro
+            jmp turno_zorro ;si no vuelve a ser turno del zorro
 
         no_puede_comer:
             mov rdi, msg_no_puede_comer
@@ -476,10 +476,10 @@ section .text
 
     turno_oca:
         sub rsp,8
-        call imprimir_tablero
+        call imprimir_tablero ; se imprime el tablero
         add rsp,8
 
-        mov rdi, msg_turno_oca
+        mov rdi, msg_turno_oca ; se imprime el mensaje del turno de la oca
         mPuts
 
         mov rdi, movimiento_oca
