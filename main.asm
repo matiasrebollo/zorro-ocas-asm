@@ -94,8 +94,26 @@ section .data
     msg_ocupada                 db "No podés moverte a una casilla ocupada.                 ", 0
     msg_no_puede_comer          db "No hay espacio para comer a esa oca.                    ", 0
     msg_error_oca               db "Inválido. Ingrese columna y fila sin espacios. Ej: C1   ", 0
+
+
+    ;fin juego
+
     msg_gana_zorro              db "Gana zorro.",10,0
     msg_gana_ocas               db "Gana ocas.",10,0
+
+    movimientos_zorro   times 9 dd 0 ;historial de movimientos del zorro [abajoizquierda, abajo, abajoderecha, izquierda, pasar_turno?, derecha, arribaizquierda, arriba, arribaderecha]
+    
+    stats_zorro:
+        stats_zorro_1           db "El zorro se movió en diagonal abajo a la izquierda %d veces.",10,0
+        stats_zorro_2           db "El zorro se movió hacia abajo %d veces.",10,0
+        stats_zorro_3           db "El zorro se movió en diagonal abajo a la derecha %d veces.",10,0
+        stats_zorro_4           db "El zorro se movió hacia la izquierda %d veces.",10,0
+        stats_zorro_5           db "",0
+        stats_zorro_6           db "El zorro se movió hacia la derecha %d veces.",10,0
+        stats_zorro_7           db "El zorro se movió en diagonal arriba a la izquierda %d veces.",10,0
+        stats_zorro_8           db "El zorro se movió hacia arriba %d veces.",10,0
+        stats_zorro_9           db "El zorro se movió en diagonal arriba a la derecha %d veces.",10,0
+
 
     ;comandos
     comando_salir               db "salir",0
@@ -114,7 +132,9 @@ section .text
         mPuts
 
     game_loop:
+        sub rsp, 8
         call check_zorro
+        add rsp, 8
 
         cmp dword[ocas_comidas], 12 ; si ya comimos 12 ocas gana el zorro
         jge gana_zorro
@@ -122,7 +142,9 @@ section .text
         cmp dword[zorro_acorralado], 1
         je gana_ocas
 
+        sub rsp, 8
         call imprimir
+        add rsp, 8
         jmp comandos_input
 
         continuar_turno:
@@ -139,11 +161,17 @@ section .text
         jmp game_loop
 
     gana_zorro:
+        sub rsp, 8
+        call imprimir_stats_zorro
+        add rsp, 8
         mov rdi, msg_gana_zorro ; se imprime que gano el zorro
         mPuts
         ret
 
     gana_ocas:
+        sub rsp, 8
+        call imprimir_stats_zorro
+        add rsp, 8
         mov rdi, msg_gana_ocas
         mPuts
         ret
@@ -275,7 +303,9 @@ section .text
         sub rcx, rcx
         mov ecx, 5
 
+        sub rsp, 8
         call lowercase_cmp
+        add rsp, 8
 
         je salir
 
@@ -286,7 +316,9 @@ section .text
         sub rcx, rcx
         mov ecx, 7
 
+        sub rsp, 8
         call lowercase_cmp
+        add rsp, 8
 
         ;je guardar
 
@@ -297,7 +329,9 @@ section .text
         sub rcx, rcx
         mov ecx, 6
 
+        sub rsp, 8
         call lowercase_cmp
+        add rsp, 8
 
         ;je cargar
 
@@ -349,20 +383,26 @@ section .text
 
         imprimir_zorro:
             mov rdi, opciones_movimiento_zorro
+            sub rsp, 8
             call seleccionar_mensaje
             call printf
+            add rsp, 8
             jmp fin_imprimir
 
         imprimir_oca_sel:
             mov rdi, opciones_seleccion_oca
+            sub rsp, 8
             call seleccionar_mensaje
             call printf
+            add rsp, 8
             jmp fin_imprimir
 
         imprimir_oca_mov:
             mov rdi, opciones_movimiento_oca
+            sub rsp, 8
             call seleccionar_mensaje
             call printf
+            add rsp, 8
             jmp fin_imprimir
 
         fin_imprimir:
@@ -570,6 +610,10 @@ section .text
             cmp dword[ocas_comidas],12 ; si ya son 12 termina el turno del zorro
             je  fin_turno_zorro
 
+            movzx eax, byte[input]
+            sub eax, '1'
+            inc dword[movimientos_zorro + eax * 4]
+
             jmp game_loop ;si no vuelve a ser turno del zorro
 
         no_puede_comer:
@@ -580,6 +624,9 @@ section .text
             jmp game_loop
 
         fin_turno_zorro:
+            movzx eax, byte[input]
+            sub eax, '1'
+            inc dword[movimientos_zorro + eax * 4]
             mov byte[turno], 1
             jmp game_loop
 
@@ -721,13 +768,59 @@ section .text
         mov byte[turno], 0
         jmp game_loop
 
+
+    imprimir_stats_zorro:
+        mov rdi, stats_zorro_1
+        mov esi, dword[movimientos_zorro]
+        sub rsp, 8
+        call printf
+        add rsp, 8
+        mov rdi, stats_zorro_2
+        mov esi, dword[movimientos_zorro + 1 * 4]
+        sub rsp, 8
+        call printf
+        add rsp, 8
+        mov rdi, stats_zorro_3
+        mov esi, dword[movimientos_zorro + 2 * 4]
+        sub rsp, 8
+        call printf
+        add rsp, 8
+        mov rdi, stats_zorro_4
+        mov esi, dword[movimientos_zorro + 3 * 4]
+        sub rsp, 8
+        call printf
+        add rsp, 8
+        mov rdi, stats_zorro_6
+        mov esi, dword[movimientos_zorro + 4 * 4]
+        sub rsp, 8
+        call printf
+        add rsp, 8
+        mov rdi, stats_zorro_7
+        mov esi, dword[movimientos_zorro + 6 * 4]
+        sub rsp, 8
+        call printf
+        add rsp, 8
+        mov rdi, stats_zorro_8
+        mov esi, dword[movimientos_zorro + 7 * 4]
+        sub rsp, 8
+        call printf
+        add rsp, 8
+        mov rdi, stats_zorro_9
+        mov esi, dword[movimientos_zorro + 8 * 4]
+        sub rsp, 8
+        call printf
+        add rsp, 8
+        ret
+
 ;funciones auxiliares
 
 lowercase_cmp:
     ; compara dos strings guardados en rsi y rdi. Ignora la capitalización del segundo asumiendo que el primero está en minusculas.
     ; largo n almacenado en ecx.
     mov dword[str_len], ecx
+    sub rsp, 8
     call lowercase
+    add rsp, 8
     mov ecx, dword[str_len]
     repe cmpsb
     ret
