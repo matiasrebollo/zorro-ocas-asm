@@ -132,6 +132,9 @@ section .text
         mPuts
 
     game_loop:
+        mov rdi, matrix
+        mPuts
+
         sub rsp, 8
         call check_zorro
         add rsp, 8
@@ -139,7 +142,7 @@ section .text
         cmp dword[ocas_comidas], 12 ; si ya comimos 12 ocas gana el zorro
         jge gana_zorro
 
-        cmp dword[zorro_acorralado], 1
+        cmp byte[zorro_acorralado], 1
         je gana_ocas
 
         sub rsp, 8
@@ -290,6 +293,8 @@ section .text
         cmp byte[zorro_acorralado], 0
         je fin_check_zorro
         
+        mov byte[zorro_acorralado], 1
+
         fin_check_zorro:
         ret
 
@@ -371,9 +376,7 @@ section .text
 
 
 
-    imprimir: ;imprime el tablero
-        mov rdi, matrix
-        mPuts
+    imprimir: ;imprime las opciones de juego
 
         cmp byte[turno],0
         je imprimir_zorro
