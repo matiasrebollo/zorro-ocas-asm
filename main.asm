@@ -2,6 +2,7 @@
 extern printf
 extern fopen
 extern fwrite
+extern fread
 extern fclose
 
 global main
@@ -40,6 +41,7 @@ section .data
 
     save_nombre                 db "save.bin", 0
     modo_escritura              db "wb",0
+    modo_lectura                db "rb",0
     fin_linea                   db 10,0
 
     zorro_pos                   dd 402
@@ -342,7 +344,7 @@ section .text
 
         call lowercase_cmp
 
-        ;je ejecutar_cargar
+        je ejecutar_cargar
 
         jmp continuar_turno
 
@@ -351,6 +353,11 @@ section .text
         ejecutar_guardar:
             sub rsp, 8
             call guardar
+            add rsp, 8
+            jmp game_loop
+        ejecutar_cargar:
+            sub rsp, 8
+            call cargar
             add rsp, 8
             jmp game_loop
 
@@ -804,11 +811,6 @@ section .text
         mov rdx, 1
         mov rcx, [fileHandle]
         call fwrite
-        mov rdi, fin_linea
-        mov rsi, 1
-        mov rdx, 1
-        mov rcx, [fileHandle]
-        call fwrite
 
         ;guardar movimientos_zorro
         mov rdi, movimientos_zorro
@@ -816,20 +818,10 @@ section .text
         mov rdx, 9
         mov rcx, [fileHandle]
         call fwrite
-        mov rdi, fin_linea
-        mov rsi, 1
-        mov rdx, 1
-        mov rcx, [fileHandle]
-        call fwrite
 
         ;guardar ocas_comidas
         mov rdi, ocas_comidas
         mov rsi, 4
-        mov rdx, 1
-        mov rcx, [fileHandle]
-        call fwrite
-        mov rdi, fin_linea
-        mov rsi, 1
         mov rdx, 1
         mov rcx, [fileHandle]
         call fwrite
@@ -840,6 +832,8 @@ section .text
         mov rdx, 1
         mov rcx, [fileHandle]
         call fwrite
+
+
         mov rdi, fin_linea
         mov rsi, 1
         mov rdx, 1
@@ -848,6 +842,55 @@ section .text
 
         mov rdi, [fileHandle]
         call fclose
+
+    cargar:
+        mov rdi, save_nombre
+        mov rsi, modo_lectura
+        call fopen
+
+        ;TODO handle error
+
+        mov [fileHandle],rax
+
+        ;cargar matrix
+        mov rdi, matrix
+        mov rsi, 35
+        mov rdx, 18
+        mov rcx, [fileHandle]
+        call fread
+
+        ;cargar turno
+        mov rdi, turno
+        mov rsi, 1
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fread
+
+        ;cargar movimientos_zorro
+        mov rdi, movimientos_zorro
+        mov rsi, 4
+        mov rdx, 9
+        mov rcx, [fileHandle]
+        call fread
+
+        ;cargar ocas_comidas
+        mov rdi, ocas_comidas
+        mov rsi, 4
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fread
+
+        ;cargar zorro_pos
+        mov rdi, zorro_pos
+        mov rsi, 4
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fread
+
+
+        mov rdi, [fileHandle]
+        call fclose
+
 
     imprimir_stats_zorro:
         mov rdi, stats_zorro_1
