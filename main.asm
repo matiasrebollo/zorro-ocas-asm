@@ -1,4 +1,5 @@
 %include "io.inc"
+extern printf
 
 global main
 
@@ -57,29 +58,42 @@ section .data
                                      ; 4 error no_puede_comer
                                      ; 5 error_oca
     
-    msg_turno_zorro:
-        db "Turno del zorro. Elija una posicion donde moverse:", 10, 0
-    opciones_movimiento_zorro   db "1) DIAGONAL IZQUIERDA ABAJO",10
-                                db "2) ABAJO",10
-                                db "3) DIAGONAL DERECHA ABAJO",10
-                                db "4) IZQUIERDA",10
-                                db "6) DERECHA",10
-                                db "7) DIAGONAL IZQUIERDA ARRIBA",10
-                                db "8) ARRIBA",10
-                                db "9) DIAGONAL DERECHA ARRIBA",10,0
-    
-    msg_movimientos_oca         db "Elija una posicion donde moverse:", 10, 0
-    opciones_movimiento_oca:     
-                                db "2) ABAJO",10
-                                db "4) IZQUIERDA",10
-                                db "6) DERECHA",10,0
+    msg_turno_zorro             db "Elegí en qué dirección mover al zorro.                  ", 0
+    msg_turno_oca               db "Elegí la oca a mover. Ingresá columna y fila            ", 0
+    msg_movimientos_oca         db "Elegí en qué dirección mover a la oca.                  ", 0
 
-    msg_error_movimiento        db "Por favor, elija un movimiento valido.",10,0
-    msg_error_pared             db "No puedes moverte a una pared.",10,0
-    msg_ocupada                 db "No puedes moverte a una casilla ocupada",10,0
-    msg_no_puede_comer          db "No hay espacio para comer a esa oca.",10,0
-    msg_turno_oca               db "Escriba posicion de la oca a mover. Columna y fila.",10,0
-    msg_error_oca               db "Ingrese una posición válida. Primero Columna y luego fila. Sin espacios. Ej: C1",10,0
+    opciones_movimiento_zorro:
+        db "+---+---+---+-----------------+-------------------+------------------+",10
+        db "| 7 | 8 | 9 |                       TURNO: ZORRO                     |",10
+        db "+---+---+---+-----------------+-------------------+------------------+",10
+        db "| 4 |   | 6 |      Salir      |      Guardar      |      Cargar      |",10
+        db "+---+---+---+-----------------+-------------------+------------------+",10
+        db "| 1 | 2 | 3 |%s|",10
+        db "+---+---+---+-----------------+-------------------+------------------+",10,0
+
+    opciones_seleccion_oca:     
+        db "+---+---+---+-----------------+-------------------+------------------+",10
+        db "|   |   |   |                       TURNO: OCAS                      |",10
+        db "+---+---+---+-----------------+-------------------+------------------+",10
+        db "|   |   |   |      Salir      |      Guardar      |      Cargar      |",10
+        db "+---+---+---+-----------------+-------------------+------------------+",10
+        db "|   |   |   |%s|",10
+        db "+---+---+---+-----------------+-------------------+------------------+",10,0
+
+    opciones_movimiento_oca:     
+        db "+---+---+---+-----------------+-------------------+------------------+",10
+        db "|   |   |   |                       TURNO: OCAS                      |",10
+        db "+---+---+---+-----------------+-------------------+------------------+",10
+        db "| 4 |   | 6 |      Salir      |      Guardar      |      Cargar      |",10
+        db "+---+---+---+-----------------+-------------------+------------------+",10
+        db "|   | 2 |   |%s|",10
+        db "+---+---+---+-----------------+-------------------+------------------+",10,0
+
+    msg_error_movimiento        db "Por favor, elegí un movimiento valido.                  ", 0
+    msg_error_pared             db "No podés moverte a una pared.                           ", 0
+    msg_ocupada                 db "No podés moverte a una casilla ocupada.                 ", 0
+    msg_no_puede_comer          db "No hay espacio para comer a esa oca.                    ", 0
+    msg_error_oca               db "Inválido. Ingrese columna y fila sin espacios. Ej: C1   ", 0
     msg_gana_zorro              db "Gana zorro.",10,0
     msg_gana_ocas               db "Gana ocas.",10,0
 
@@ -283,21 +297,20 @@ section .text
 
         imprimir_zorro:
             mov rdi, opciones_movimiento_zorro
-            mPuts
             call seleccionar_mensaje
-            mPuts
+            call printf
             jmp fin_imprimir
 
         imprimir_oca_sel:
+            mov rdi, opciones_seleccion_oca
             call seleccionar_mensaje
-            mPuts
+            call printf
             jmp fin_imprimir
 
         imprimir_oca_mov:
             mov rdi, opciones_movimiento_oca
-            mPuts
             call seleccionar_mensaje
-            mPuts
+            call printf
             jmp fin_imprimir
 
         fin_imprimir:
@@ -328,28 +341,28 @@ section .text
             je mensaje_oca_mov
 
             mensaje_movimiento:
-                mov rdi, msg_error_movimiento
+                mov rsi, msg_error_movimiento
                 ret
             mensaje_pared:
-                mov rdi, msg_error_pared
+                mov rsi, msg_error_pared
                 ret
             mensaje_ocupada:
-                mov rdi, msg_ocupada
+                mov rsi, msg_ocupada
                 ret
             mensaje_comer:
-                mov rdi, msg_no_puede_comer
+                mov rsi, msg_no_puede_comer
                 ret
             mensaje_oca_invalida:
-                mov rdi, msg_error_oca
+                mov rsi, msg_error_oca
                 ret
             mensaje_zorro:
-                mov rdi, msg_turno_zorro
+                mov rsi, msg_turno_zorro
                 ret
             mensaje_oca_sel:
-                mov rdi, msg_turno_oca
+                mov rsi, msg_turno_oca
                 ret
             mensaje_oca_mov:
-                mov rdi, msg_movimientos_oca
+                mov rsi, msg_movimientos_oca
                 ret
 
 
