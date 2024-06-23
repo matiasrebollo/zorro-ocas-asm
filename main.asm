@@ -697,8 +697,30 @@ section .text
         mov byte[turno], 0
         jmp game_loop
 
+;funciones auxiliares
 
+lowercase_cmp:
+    ; compara dos strings guardados en rsi y rdi. Ignora la capitalización del segundo asumiendo que el primero está en minusculas.
+    ; largo n almacenado en ecx.
+    mov dword[str_len], ecx
+    call lowercase
+    mov ecx, dword[str_len]
+    repe cmpsb
+    ret
 
+lowercase:
+    ; convierte a minusculas el string almacenado en rdi, de largo n almacenado en ecx.
+    lowercase_start:
+    mov al, [rdi+rcx]
+    cmp al, 91
+    jg lowercase_continue
+    add al, 32
+    mov [rdi+rcx], al
+    lowercase_continue:
+    dec ecx
+    cmp ecx, 0
+    jge lowercase_start
+    ret
 
 
 
