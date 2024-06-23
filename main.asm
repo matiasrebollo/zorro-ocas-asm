@@ -97,7 +97,13 @@ section .data
     msg_gana_zorro              db "Gana zorro.",10,0
     msg_gana_ocas               db "Gana ocas.",10,0
 
+    ;comandos
+    comando_salir               db "salir",0
+    comando_guardar             db "guardar",0
+    comando_cargar              db "cargar",0
+
     str_len                     dd 0
+
 section .bss
     input           resb 10
 
@@ -263,11 +269,42 @@ section .text
 
     comandos_input:
         ; si input == salir: ret
+
+        mov rsi, comando_salir
+        mov rdi, input
+        sub rcx, rcx
+        mov ecx, 5
+
+        call lowercase_cmp
+
+        je salir
+
         ; si input == guardar: call guardar
+
+        mov rsi, comando_guardar
+        mov rdi, input
+        sub rcx, rcx
+        mov ecx, 7
+
+        call lowercase_cmp
+
+        ;je guardar
+
         ; si input == cargar: call cargar
+
+        mov rsi, comando_cargar
+        mov rdi, input
+        sub rcx, rcx
+        mov ecx, 6
+
+        call lowercase_cmp
+
+        ;je cargar
+
         jmp continuar_turno
 
-
+        salir:
+            ret
 
 
 
