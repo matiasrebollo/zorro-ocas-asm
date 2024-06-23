@@ -591,38 +591,24 @@ section .text
         input_columna:
         mov al, byte[input] ;cargo columna
         mov ebx, 110
-        cmp al, 'A'
-        je input_fila
         cmp al, 'a'
         je input_fila
         mov ebx, 114
-        cmp al, 'B'
-        je input_fila
         cmp al, 'b'
         je input_fila
         mov ebx, 118
-        cmp al, 'C'
-        je input_fila
         cmp al, 'c'
         je input_fila
         mov ebx, 122
-        cmp al, 'D'
-        je input_fila
         cmp al, 'd'
         je input_fila
         mov ebx, 126
-        cmp al, 'E'
-        je input_fila
         cmp al, 'e'
         je input_fila
         mov ebx, 130
-        cmp al, 'F'
-        je input_fila
         cmp al, 'f'
         je input_fila
         mov ebx, 134
-        cmp al, 'G'
-        je input_fila
         cmp al, 'g'
         je input_fila
 
