@@ -108,9 +108,13 @@ section .text
 
     game_loop:
         call imprimir
+        call check_zorro
 
         cmp dword[ocas_comidas], 12 ; si ya comimos 12 ocas gana el zorro
         jge gana_zorro
+
+        cmp dword[zorro_acorralado], 1
+        je gana_ocas
 
         cmp byte[turno],0
         je turno_zorro
@@ -146,7 +150,7 @@ section .text
         call validar_movimiento
         add rsp, 8
         cmp byte[zorro_acorralado], 0
-        je game_loop
+        je fin_check_zorro
         
         
         ;izquierda arriba
@@ -161,7 +165,7 @@ section .text
         call validar_movimiento
         add rsp, 8
         cmp byte[zorro_acorralado], 0
-        je game_loop
+        je fin_check_zorro
         
         
         ;arriba
@@ -174,7 +178,7 @@ section .text
         call validar_movimiento
         add rsp, 8
         cmp byte[zorro_acorralado], 0
-        je game_loop
+        je fin_check_zorro
         
 
         ;arriba derecha
@@ -189,7 +193,7 @@ section .text
         call validar_movimiento
         add rsp, 8
         cmp byte[zorro_acorralado], 0
-        je game_loop
+        je fin_check_zorro
         
 
         ;derecha
@@ -202,7 +206,7 @@ section .text
         call validar_movimiento
         add rsp, 8
         cmp byte[zorro_acorralado], 0
-        je game_loop
+        je fin_check_zorro
         
 
         ;derecha abajo
@@ -217,7 +221,7 @@ section .text
         call validar_movimiento
         add rsp, 8
         cmp byte[zorro_acorralado], 0
-        je game_loop
+        je fin_check_zorro
         
 
         ;abajo
@@ -230,7 +234,7 @@ section .text
         call validar_movimiento
         add rsp, 8
         cmp byte[zorro_acorralado], 0
-        je game_loop
+        je fin_check_zorro
         
 
         ;abajo izquierda
@@ -245,9 +249,10 @@ section .text
         call validar_movimiento
         add rsp, 8
         cmp byte[zorro_acorralado], 0
-        je game_loop
+        je fin_check_zorro
         
-        jmp gana_ocas
+        fin_check_zorro:
+        ret
 
 
 
