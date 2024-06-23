@@ -23,27 +23,6 @@ section .data
         db      " ##########+-----------+##########", 10
         db      " #################################", 10,0
 
-    title:
-        db      "           ______  ____       _                   _____",10
-        db      "          /\__  _\/\  _`\   /' \                 /\  __`\ ", 10
-        db      "          \/_/\ \/\ \ \L\ \/\_, \                \ \ \/\ \  _ __    __      __",10
-        db      "             \ \ \ \ \ ,__/\/_/\ \      _______   \ \ \ \ \/\`'__\/'_ `\  /'__`\ ",10
-        db      "              \ \ \ \ \ \/    \ \ \    /\______\   \ \ \_\ \ \ \//\ \L\ \/\ \L\.\_",10
-        db      "               \ \_\ \ \_\     \ \_\   \/______/    \ \_____\ \_\\ \____ \ \__/.\_\ ",10
-        db      "                \/_/  \/_/      \/_/                 \/_____/\/_/ \/___L\ \/__/\/_/",10
-        db      "                                                                    /\____/",10
-        db      "                                                                    \_/__/",10
-        db      " ______  _   ______                                    _                ____",10
-        db      "|  ____|| | |___  /                                   | |              / __ \ ",10
-        db      "| |__   | |    / /   ___   _ __  _ __   ___    _   _  | |  __ _  ___  | |  | |  ___   __ _  ___ ",10
-        db      "|  __|  | |   / /   / _ \ | '__|| '__| / _ \  | | | | | | / _` |/ __| | |  | | / __| / _` |/ __|",10
-        db      "| |____ | |  / /__ | (_) || |   | |   | (_) | | |_| | | || (_| |\__ \ | |__| || (__ | (_| |\__ \ ",10
-        db      "|______||_| /_____| \___/ |_|   |_|    \___/   \__, | |_| \__,_||___/  \____/  \___| \__,_||___/",10
-        db      "                                                __/ |",10
-        db      "                                               |___/",10
-        db      "",10
-        db      "                                     ESCRIBE START PARA EMPEZAR",10,0
-
     msg_bienvenida:
         db "¡Bienvenido al juego El Zorro y las Ocas!", 10 
         db "Reglas básicas:", 10 
@@ -53,18 +32,7 @@ section .data
         db "Para comer una oca, el Zorro debe saltar sobre ella a una casilla vacía (puede hacer saltos multiples).", 10
         db "Es un movimiento por turno (comienza el zorro, luego las ocas) y solamente puede moverse una pieza por vez.", 10 
         db "El juego termina cuando el Zorro captura 12 ocas o queda acorralado.", 10 
-        db "¡Que empiece la partida!", 10, 
-        db "A continuacion se muestra el tablero:", 10, 0 
-
-    tablero db "#", "#", "#", "#", "#", "#", "#", "#", "#",10
-            db "#", "#", "#", "O", "O", "O", "#", "#", "#",10
-            db "#", "#", "#", "O", "O", "O", "#", "#", "#",10
-            db "#", "O", "O", "O", "O", "O", "O", "O", "#",10
-            db "#", "O", " ", " ", " ", " ", " ", "O", "#",10
-            db "#", "O", " ", " ", "X", " ", " ", "O", "#",10
-            db "#", "#", "#", " ", " ", " ", "#", "#", "#",10
-            db "#", "#", "#", " ", " ", " ", "#", "#", "#",10
-            db "#", "#", "#", "#", "#", "#", "#", "#", "#",10,0
+        db "¡Que empiece la partida!", 10, 0
 
     zorro_pos           dd 402
     zorro_nueva_pos     dd 402
@@ -78,6 +46,16 @@ section .data
     mov_x               dd 4
     mov_y               dd 70
     
+    turno                       db 0 ; 0 si es el turno de MOVER zorro. 
+                                     ; 1 si es el turno de ELEGIR la oca. 
+                                     ; 2 si es el turno de MOVER la oca.
+
+    error                       db 0 ; 0 si no hay error
+                                     ; 1 error_movimiento
+                                     ; 2 error_pared
+                                     ; 3 error ocupada
+                                     ; 4 error no_puede_comer
+                                     ; 5 error_oca
     
     msg_turno_zorro:
         db "Turno del zorro. Elija una posicion donde moverse:", 10, 0
@@ -106,8 +84,7 @@ section .data
     msg_gana_ocas               db "Gana ocas.",10,0
 
 section .bss
-    movimiento_zorro resb 10
-    movimiento_oca   resb 10
+    input           resb 10
 
 section .text
 
@@ -116,17 +93,19 @@ section .text
         mPuts
 
     game_loop:
-
-        sub rsp, 8
-        call turno_zorro ; el juego comienza con el turno del zorro
-        add rsp, 8
+        call imprimir
 
         cmp dword[ocas_comidas], 12 ; si ya comimos 12 ocas gana el zorro
         jge gana_zorro
 
-        sub rsp, 8
-        call turno_oca ; luego es el turno de las ocas
-        add rsp, 8
+        cmp byte[turno],0
+        je turno_zorro
+
+        cmp byte[turno],1
+        je turno_oca
+
+        cmp byte[turno],2
+        je turno_mover_oca
 
         jmp game_loop
 
@@ -291,31 +270,97 @@ section .text
 
 
 
-    imprimir_tablero: ;imprime el tablero
+    imprimir: ;imprime el tablero
         mov rdi, matrix
         mPuts
+
+        cmp byte[turno],0
+        je imprimir_zorro
+        cmp byte[turno],1
+        je imprimir_oca_sel
+        cmp byte[turno],2
+        je imprimir_oca_mov
+
+        imprimir_zorro:
+            mov rdi, opciones_movimiento_zorro
+            mPuts
+            call seleccionar_mensaje
+            mPuts
+            jmp fin_imprimir
+
+        imprimir_oca_sel:
+            call seleccionar_mensaje
+            mPuts
+            jmp fin_imprimir
+
+        imprimir_oca_mov:
+            mov rdi, opciones_movimiento_oca
+            mPuts
+            call seleccionar_mensaje
+            mPuts
+            jmp fin_imprimir
+
+        fin_imprimir:
+        mov rdi, input
+        mGets
+
+        mov byte[error], 0
+
         ret
+
+
+        seleccionar_mensaje:
+            cmp byte[error],1
+            je mensaje_movimiento
+            cmp byte[error],2
+            je mensaje_pared
+            cmp byte[error],3
+            je mensaje_ocupada
+            cmp byte[error],4
+            je mensaje_comer
+            cmp byte[error],5
+            je mensaje_oca_invalida
+            cmp byte[turno],0
+            je mensaje_zorro
+            cmp byte[turno],1
+            je mensaje_oca_sel
+            cmp byte[turno],2
+            je mensaje_oca_mov
+
+            mensaje_movimiento:
+                mov rdi, msg_error_movimiento
+                ret
+            mensaje_pared:
+                mov rdi, msg_error_pared
+                ret
+            mensaje_ocupada:
+                mov rdi, msg_ocupada
+                ret
+            mensaje_comer:
+                mov rdi, msg_no_puede_comer
+                ret
+            mensaje_oca_invalida:
+                mov rdi, msg_error_oca
+                ret
+            mensaje_zorro:
+                mov rdi, msg_turno_zorro
+                ret
+            mensaje_oca_sel:
+                mov rdi, msg_turno_oca
+                ret
+            mensaje_oca_mov:
+                mov rdi, msg_movimientos_oca
+                ret
+
+
 
     turno_zorro: ;turno del zorro
 
-        sub rsp,8
-        call imprimir_tablero ;imprimimos el tablero
-        add rsp,8
-
-        mov rdi, msg_turno_zorro ; muestra el msg del turno del zorro
-        mPuts
-        
-        mov rdi, opciones_movimiento_zorro ; muestra sus opciones de movimiento
-        mPuts
-        
-        mov rdi, movimiento_zorro ; lee lo que ingresa el usuario
-        mGets
-
         ; leer la opcion de movimiento
-        mov al, byte[movimiento_zorro + 1]
+        mov al, byte[input + 1]
         cmp al, 0 ; verifica que se haya mandado UN numero
         jne movimiento_invalido_zorro
-        mov al, byte[movimiento_zorro]
+        mov al, byte[input]
         ;determinar movimiento y saltar a la rutina adecuada
         cmp al, '1'
         je mover_zorro_izquierda_abajo
@@ -335,9 +380,8 @@ section .text
         je mover_zorro_derecha_arriba
 
         movimiento_invalido_zorro: ;si llegamos aca es porque el usuario no ingreso un movimiento valido
-            mov rdi, msg_error_movimiento
-            mPuts
-            jmp turno_zorro
+            mov byte[error], 1
+            jmp game_loop
 
         mover_zorro_izquierda:
             mov eax, [zorro_pos]
@@ -427,14 +471,14 @@ section .text
             mov byte[rdi], ' ' ; eliminamos nuestra antigua posicion
             mov ebx, [zorro_nueva_pos]
             mov [zorro_pos], ebx ;actualizamos la posicion del zorro
-            ret
+
+            jmp fin_turno_zorro
 
         error_pared_zorro:
-            mov rdi, msg_error_pared
-            mPuts
+            mov byte[error],2
             mov ebx, [zorro_pos]
             mov [zorro_nueva_pos], ebx; deshacemos el movimiento y vuelve a ser turno del zorro
-            jmp turno_zorro
+            jmp game_loop
         
         comer_oca:
             lea rdi, [matrix]
@@ -461,36 +505,26 @@ section .text
             cmp dword[ocas_comidas],12 ; si ya son 12 termina el turno del zorro
             je  fin_turno_zorro
 
-            jmp turno_zorro ;si no vuelve a ser turno del zorro
+            jmp game_loop ;si no vuelve a ser turno del zorro
 
         no_puede_comer:
-            mov rdi, msg_no_puede_comer
-            mPuts
+            mov byte[error], 4
             mov ebx, [zorro_pos]
             mov [zorro_nueva_pos], ebx
             mov [zorro_nueva_pos], ebx
-            jmp turno_zorro
+            jmp game_loop
 
         fin_turno_zorro:
-            ret
+            mov byte[turno], 1
+            jmp game_loop
 
     turno_oca:
-        sub rsp,8
-        call imprimir_tablero ; se imprime el tablero
-        add rsp,8
-
-        mov rdi, msg_turno_oca ; se imprime el mensaje del turno de la oca
-        mPuts
-
-        mov rdi, movimiento_oca ; se lee la oca seleccionada
-        mGets
-
-        mov al, byte[movimiento_oca + 2]
+        mov al, byte[input + 2]
         cmp al, 0 
         jne pos_invalida
 
         input_columna:
-        mov al, byte[movimiento_oca] ;cargo columna
+        mov al, byte[input] ;cargo columna
         mov ebx, 110
         cmp al, 'A'
         je input_fila
@@ -530,7 +564,7 @@ section .text
         jmp pos_invalida ; si no se selecciono ninguna de las anteriores es invalido
 
         input_fila:
-        mov al, byte[movimiento_oca + 1] ;cargo fila
+        mov al, byte[input + 1] ;cargo fila
         cmp al, '1'
         je pos_valida
         add ebx, [mov_y]
@@ -553,9 +587,8 @@ section .text
         je pos_valida
 
         pos_invalida: ; no se selecciono algo valido y vuelve a ser turno de la oca
-        mov rdi, msg_error_oca 
-        mPuts
-        jmp turno_oca
+        mov byte[error], 5
+        jmp game_loop
 
         pos_valida:
         mov [oca_pos], ebx
@@ -563,29 +596,17 @@ section .text
         lea rdi, [matrix]
         add edi, [oca_pos]
         mov al, byte[rdi]
-        cmp al, 'X'
-        je pos_invalida ; si la posicion seleccionada está el zorro es invalido
-        cmp al, '#'
-        je pos_invalida ; si la posicion seleccionada es una pared es invalido
-        cmp al, ' '
-        je pos_invalida ; si la posicion seleccionada esta vacia es invalido
+        cmp al, 'O'
+        jne pos_invalida
 
-        turno_mover_oca:    
-        sub rsp,8
-        call imprimir_tablero
-        add rsp,8
+        mov byte[turno], 2
+        jmp game_loop
 
-        mov rdi, msg_movimientos_oca ; se le muestran los movimientos a la oca
-        mPuts
-        mov rdi, opciones_movimiento_oca
-        mPuts
-        mov rdi, movimiento_oca ; se lee el movimiento
-        mGets
-
-        mov al, byte[movimiento_oca + 1]
+    turno_mover_oca:    
+        mov al, byte[input + 1]
         cmp al, 0 
         jne mov_invalido_oca
-        mov al, byte[movimiento_oca]
+        mov al, byte[input]
         cmp al, '2'
         je mover_oca_abajo
         cmp al, '4'
@@ -594,9 +615,8 @@ section .text
         je mover_oca_derecha
 
         mov_invalido_oca: ; si se llega aca el movimiento escrito es invalido
-        mov rdi, msg_error_movimiento
-        mPuts
-        jmp turno_mover_oca
+        mov byte[error], 1
+        jmp game_loop
 
         mover_oca_abajo:
             mov eax, [oca_pos]
@@ -635,19 +655,20 @@ section .text
             add edi, [oca_nueva_pos]
             mov byte[rdi], 'O' ; colocamos la oca en su nueva posicion
 
-            ret
+            jmp fin_turno_mover_oca
 
         error_pared_oca:
-            mov rdi, msg_error_pared
-            mPuts
-            jmp turno_oca
+            mov byte[error], 2
+            mov byte[turno], 1
+            jmp game_loop
         casilla_ocupada:
-            mov rdi, msg_ocupada
-            mPuts
-            jmp turno_oca
+            mov byte[error], 3
+            mov byte[turno], 1
+            jmp game_loop
 
-
-        ret
+        fin_turno_mover_oca:
+        mov byte[turno], 0
+        jmp game_loop
 
 
 
