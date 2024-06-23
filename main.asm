@@ -107,7 +107,6 @@ section .text
         mPuts
 
     game_loop:
-        call imprimir
         call check_zorro
 
         cmp dword[ocas_comidas], 12 ; si ya comimos 12 ocas gana el zorro
@@ -115,6 +114,11 @@ section .text
 
         cmp dword[zorro_acorralado], 1
         je gana_ocas
+
+        call imprimir
+        jmp comandos_input
+
+        continuar_turno:
 
         cmp byte[turno],0
         je turno_zorro
@@ -256,6 +260,11 @@ section .text
 
 
 
+    comandos_input:
+        ; si input == salir: ret
+        ; si input == guardar: call guardar
+        ; si input == cargar: call cargar
+        jmp continuar_turno
 
 
 
