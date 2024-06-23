@@ -344,6 +344,7 @@ section .text
 
 
     validar_movimiento:
+        mov byte[zorro_acorralado],0
         lea rdi, [matrix]
         add edi, [zorro_nueva_pos]
         mov al, byte[rdi]
