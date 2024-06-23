@@ -1,5 +1,8 @@
 %include "io.inc"
 extern printf
+extern fopen
+extern fwrite
+extern fclose
 
 global main
 
@@ -35,17 +38,21 @@ section .data
         db "El juego termina cuando el Zorro captura 12 ocas o queda acorralado.", 10 
         db "¡Que empiece la partida!", 10, 0
 
-    zorro_pos           dd 402
-    zorro_nueva_pos     dd 402
-    zorro_sig_pos       dd 402
-    zorro_acorralado    db 0 ;0 si al zorro le quedan movimientos validos, 1 si no.
+    save_nombre                 db "save.bin", 0
+    modo_escritura              db "wb",0
+    fin_linea                   db 10,0
 
-    oca_pos             dd 0
-    oca_nueva_pos       dd 0
-    ocas_comidas        dd 0
+    zorro_pos                   dd 402
+    zorro_nueva_pos             dd 402
+    zorro_sig_pos               dd 402
+    zorro_acorralado            db 0 ;0 si al zorro le quedan movimientos validos, 1 si no.
 
-    mov_x               dd 4
-    mov_y               dd 70
+    oca_pos                     dd 0
+    oca_nueva_pos               dd 0
+    ocas_comidas                dd 0
+
+    mov_x                       dd 4
+    mov_y                       dd 70
     
     turno                       db 0 ; 0 si es el turno de MOVER zorro. 
                                      ; 1 si es el turno de ELEGIR la oca. 
@@ -61,6 +68,7 @@ section .data
     msg_turno_zorro             db "Elegí en qué dirección mover al zorro.                  ", 0
     msg_turno_oca               db "Elegí la oca a mover. Ingresá columna y fila            ", 0
     msg_movimientos_oca         db "Elegí en qué dirección mover a la oca.                  ", 0
+
 
     opciones_movimiento_zorro:
         db "+---+---+---+-----------------+-------------------+------------------+",10
@@ -124,6 +132,8 @@ section .data
 
 section .bss
     input           resb 10
+
+    fileHandle      resq 1
 
 section .text
 
@@ -308,11 +318,9 @@ section .text
         sub rcx, rcx
         mov ecx, 5
 
-        sub rsp, 8
         call lowercase_cmp
-        add rsp, 8
 
-        je salir
+        je ejecutar_salir
 
         ; si input == guardar: call guardar
 
@@ -321,11 +329,9 @@ section .text
         sub rcx, rcx
         mov ecx, 7
 
-        sub rsp, 8
         call lowercase_cmp
-        add rsp, 8
 
-        ;je guardar
+        je ejecutar_guardar
 
         ; si input == cargar: call cargar
 
@@ -334,16 +340,19 @@ section .text
         sub rcx, rcx
         mov ecx, 6
 
-        sub rsp, 8
         call lowercase_cmp
-        add rsp, 8
 
-        ;je cargar
+        ;je ejecutar_cargar
 
         jmp continuar_turno
 
-        salir:
+        ejecutar_salir:
             ret
+        ejecutar_guardar:
+            sub rsp, 8
+            call guardar
+            add rsp, 8
+            jmp game_loop
 
 
 
@@ -772,6 +781,73 @@ section .text
         mov byte[turno], 0
         jmp game_loop
 
+
+    guardar:
+        mov rdi, save_nombre
+        mov rsi, modo_escritura
+        call fopen
+
+        ;TODO handle error
+
+        mov [fileHandle],rax
+
+        ;guardar matrix
+        mov rdi, matrix
+        mov rsi, 35
+        mov rdx, 18
+        mov rcx, [fileHandle]
+        call fwrite
+
+        ;guardar turno
+        mov rdi, turno
+        mov rsi, 1
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fwrite
+        mov rdi, fin_linea
+        mov rsi, 1
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fwrite
+
+        ;guardar movimientos_zorro
+        mov rdi, movimientos_zorro
+        mov rsi, 4
+        mov rdx, 9
+        mov rcx, [fileHandle]
+        call fwrite
+        mov rdi, fin_linea
+        mov rsi, 1
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fwrite
+
+        ;guardar ocas_comidas
+        mov rdi, ocas_comidas
+        mov rsi, 4
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fwrite
+        mov rdi, fin_linea
+        mov rsi, 1
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fwrite
+
+        ;guardar zorro_pos
+        mov rdi, zorro_pos
+        mov rsi, 4
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fwrite
+        mov rdi, fin_linea
+        mov rsi, 1
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fwrite
+
+        mov rdi, [fileHandle]
+        call fclose
 
     imprimir_stats_zorro:
         mov rdi, stats_zorro_1
