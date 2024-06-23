@@ -97,6 +97,7 @@ section .data
     msg_gana_zorro              db "Gana zorro.",10,0
     msg_gana_ocas               db "Gana ocas.",10,0
 
+    str_len                     dd 0
 section .bss
     input           resb 10
 
@@ -712,8 +713,10 @@ lowercase:
     ; convierte a minusculas el string almacenado en rdi, de largo n almacenado en ecx.
     lowercase_start:
     mov al, [rdi+rcx]
-    cmp al, 91
+    cmp al, 90
     jg lowercase_continue
+    cmp al, 65
+    jl lowercase_continue
     add al, 32
     mov [rdi+rcx], al
     lowercase_continue:
