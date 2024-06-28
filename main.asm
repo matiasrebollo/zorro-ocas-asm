@@ -220,9 +220,11 @@ section .text
             mGets
 
             mov al, byte[nuevo_simbolo_zorro] ; compara para chequear su validez
+            cmp byte [nuevo_simbolo_zorro+1], 0
+            jne simbolo_zorro_invalido ; si ingreso mas de un caracter
             cmp al, '#'
             je simbolo_zorro_invalido
-            cmp al, ''
+            cmp al, ' '
             je simbolo_zorro_invalido
             jmp validar_simbolo_zorro ;cambia el simbolo
 
@@ -242,11 +244,13 @@ section .text
             mGets
 
             mov al, byte [nuevo_simbolo_oca] ; compara para chequear su validez
+            cmp byte [nuevo_simbolo_oca+1], 0
+            jne simbolo_oca_invalido ; si ingreso mas de un caracter
             cmp al, '#'
             je simbolo_oca_invalido
             cmp al, ' '
             je simbolo_oca_invalido
-            cmp al, byte [simbolo_zorro]
+            cmp al, byte [simbolo_oca]
             je simbolo_oca_invalido
             jmp validar_simbolo_oca ; cambia el simbolo
 
@@ -257,6 +261,32 @@ section .text
 
         validar_simbolo_oca:
             mov byte [simbolo_oca], al ; actualiza simbolo oca
+
+        jmp actualizar_simbolos_matriz
+
+
+    actualizar_simbolos_matriz:
+        lea r8, [matrix] ; apunta a la matriz
+        mov rcx, 685 ; tamano de la matriz en caracteres
+        
+        recorrer_bucle:
+            mov al, byte[r8] ; lee un caracter
+
+            cmp al, 'X'
+            jne revisar_ocas
+            mov al, byte[simbolo_zorro]
+            mov byte[r8], al
+            jmp siguiente_caracter
+
+        revisar_ocas:
+            cmp al, 'O'
+            jne siguiente_caracter
+            mov al, byte[simbolo_oca]
+            mov byte[r8], al
+
+        siguiente_caracter:
+            inc r8 ; siguiente caracter
+            loop recorrer_bucle ; dec rcx y loopea hasta 0
 
         jmp game_loop
 
