@@ -26,7 +26,7 @@ section .data
         db      " ##########|---+---+---|##########", 10
         db      "7##########|   |   |   |##########", 10
         db      " ##########+-----------+##########", 10
-        db      " #################################", 10,0
+        db      " #################################", 10,0 ; 37x18
 
     msg_bienvenida:
         db "¡Bienvenido al juego El Zorro y las Ocas!", 10 
@@ -39,6 +39,19 @@ section .data
         db "El juego termina cuando el Zorro captura 12 ocas o queda acorralado.", 10 
         db "¡Que empiece la partida!", 10, 0
 
+    ;simbolos por defecto
+    simbolo_zorro               db 'X', 0
+    simbolo_oca                 db 'O', 0
+
+    ;mensajes para la personalizacion
+    msg_personalizacion         db "Desea personalizar los simbolos del zorro y las ocas? (S/N):", 0
+    msg_respuesta_invalida      db "Respuesta inválida. Por favor, ingrese S o N.", 10, 0
+    msg_simbolo_invalido_zorro  db "Símbolo inválido. No puede ser '#' ni un espacio. Ingrese otro símbolo para el Zorro: ", 0
+    msg_simbolo_invalido_oca    db "Símbolo inválido. No puede ser '#' ni un espacio ni el mismo símbolo que el Zorro. Ingrese otro símbolo para las Ocas: ", 0
+    msg_simbolo_zorro           db "Ingrese el simbolo para el zorro:", 0
+    msg_simbolo_oca             db "Ingrese el simbolo para las ocas:", 0
+
+    
     save_nombre                 db "save.bin", 0
     modo_escritura              db "wb",0
     modo_lectura                db "rb",0
@@ -61,11 +74,11 @@ section .data
                                      ; 2 si es el turno de MOVER la oca.
 
     error                       db 0 ; 0 si no hay error
-                                     ; 1 error_movimiento
+                                     ; 1 error_movimiento, (movimiento invalido).
                                      ; 2 error_pared
                                      ; 3 error ocupada
                                      ; 4 error no_puede_comer
-                                     ; 5 error_oca
+                                     ; 5 error_oca, (seleccion no valida).
     
     msg_turno_zorro             db "Elegí en qué dirección mover al zorro.                  ", 0
     msg_turno_oca               db "Elegí la oca a mover. Ingresá columna y fila            ", 0
@@ -133,15 +146,37 @@ section .data
     str_len                     dd 0
 
 section .bss
-    input           resb 10
+    respuesta_personalizacion   resb 2 ; para almacenar la respuesta de personalizacion (S/N)
+    nuevo_simbolo_zorro         resb 2
+    nuevo_simbolo_oca           resb 2
+    orientacion                 resb 2
 
-    fileHandle      resq 1
+    input                       resb 10
+
+    fileHandle                  resq 1
 
 section .text
 
     main:
-        mov rdi, msg_bienvenida ;printeamos bienvenida al juego
+        mov rdi, msg_bienvenida ; imprime bienvenida al juego
         mPuts
+
+        verificar_personalizacion:
+            mov rdi, msg_personalizacion ; pregunta si se desea personalizar
+            mPuts
+            mov rdi, respuesta_personalizacion ; lee la respuesta
+            mGets
+
+            mov al, byte[respuesta_personalizacion]
+            cmp al, 'S'
+            je personalizar_simbolos ; si S, personaliza simbolos
+            cmp al, 'N'
+            je game_loop ; si N, comienza el juego
+
+            mov rdi, msg_respuesta_invalida
+            mPuts
+            jmp verificar_personalizacion
+
 
     game_loop:
         mov rdi, matrix
@@ -154,13 +189,13 @@ section .text
         cmp dword[ocas_comidas], 12 ; si ya comimos 12 ocas gana el zorro
         jge gana_zorro
 
-        cmp byte[zorro_acorralado], 1
+        cmp byte[zorro_acorralado], 1 ; verifica si el zorro esta acorralado
         je gana_ocas
 
         sub rsp, 8
-        call imprimir
+        call imprimir ; dependiendo a quien le toque, imprime opciones de juego
         add rsp, 8
-        jmp comandos_input
+        jmp comandos_input ; verifica si se uso algun comando (save, load, exit)
 
         continuar_turno:
 
@@ -175,6 +210,57 @@ section .text
 
         jmp game_loop
 
+    
+    personalizar_simbolos:
+        
+        leer_simbolo_zorro:
+            mov rdi, msg_simbolo_zorro ; pide simbolo
+            mPuts
+            mov rdi, nuevo_simbolo_zorro ; lee simbolo
+            mGets
+
+            mov al, byte[nuevo_simbolo_zorro] ; compara para chequear su validez
+            cmp al, '#'
+            je simbolo_zorro_invalido
+            cmp al, ''
+            je simbolo_zorro_invalido
+            jmp validar_simbolo_zorro ;cambia el simbolo
+
+        simbolo_zorro_invalido:
+            mov rdi, msg_simbolo_invalido_zorro
+            mPuts
+            jmp leer_simbolo_zorro
+
+        validar_simbolo_zorro:
+            mov byte[simbolo_zorro], al ; actualiza simbolo del zorro
+
+        
+        leer_simbolo_oca:
+            mov rdi, msg_simbolo_oca
+            mPuts
+            mov rdi, nuevo_simbolo_oca
+            mGets
+
+            mov al, byte [nuevo_simbolo_oca] ; compara para chequear su validez
+            cmp al, '#'
+            je simbolo_oca_invalido
+            cmp al, ' '
+            je simbolo_oca_invalido
+            cmp al, byte [simbolo_zorro]
+            je simbolo_oca_invalido
+            jmp validar_simbolo_oca ; cambia el simbolo
+
+        simbolo_oca_invalido:
+            mov rdi, msg_simbolo_invalido_oca
+            mPuts
+            jmp leer_simbolo_oca
+
+        validar_simbolo_oca:
+            mov byte [simbolo_oca], al ; actualiza simbolo oca
+
+        jmp game_loop
+
+    
     gana_zorro:
         sub rsp, 8
         call imprimir_stats_zorro
