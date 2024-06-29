@@ -42,10 +42,17 @@ section .data
     ;personalizacion por defecto
     simbolo_zorro               db 'X', 0
     simbolo_oca                 db 'O', 0
+    rotacion                    db 0
+
+    rotacion_0                  db "mapas/0.bin", 0
+    rotacion_1                  db "mapas/1.bin", 0
+    rotacion_2                  db "mapas/2.bin", 0
+    rotacion_3                  db "mapas/3.bin", 0
 
     ;mensajes para la personalizacion
-    msg_personalizacion         db "Querés personalizar los simbolos del zorro y las ocas? (S/N):", 0
-    msg_respuesta_invalida      db "Respuesta inválida. Por favor, ingresá S o N.", 10, 0
+    msg_simbolos                db "Querés personalizar los simbolos del zorro y las ocas? (S/N):", 0
+    msg_sibolos_invalido        db "Respuesta inválida. Por favor, ingresá S o N.", 10, 0
+    msg_rotacion                db "Querés rotar el tablero? Ingresá 6 para girar en sentido horario o 4 para girar en sentido antihorario. De lo contrario, presioná enter.", 0
     msg_simbolo_invalido_zorro  db "Símbolo inválido. No puede ser '#' ni un espacio. Ingresá otro símbolo para el Zorro: ", 0
     msg_simbolo_invalido_oca    db "Símbolo inválido. No puede ser '#' ni un espacio ni el mismo símbolo que el Zorro. Ingresá otro símbolo para las Ocas: ", 0
     msg_simbolo_zorro           db "Ingresá el simbolo para el zorro:", 0
@@ -107,7 +114,7 @@ section .data
 
     opciones_movimiento_oca:     
         db "+---+---+---+-----------------+-------------------+------------------+",10
-        db "|   |   |   |                       TURNO: OCAS                      |",10
+        db "|   | 8 |   |                       TURNO: OCAS                      |",10
         db "+---+---+---+-----------------+-------------------+------------------+",10
         db "| 4 |   | 6 |      Salir      |      Guardar      |      Cargar      |",10
         db "+---+---+---+-----------------+-------------------+------------------+",10
@@ -163,8 +170,34 @@ section .text
         mov rdi, msg_bienvenida ; imprime bienvenida al juego
         mPuts
 
+        opcion_rotacion:
+            mov rdi, matrix
+            mPuts
+
+            mov rdi, msg_rotacion
+            mPuts
+
+            mov rdi, input
+            mGets
+
+            mov al, byte[input]
+            cmp al, 0
+            je verificar_personalizacion
+
+            mov al, byte[input + 1]
+            cmp al, 0
+            jne opcion_rotacion
+
+            mov al, byte[input]
+            cmp al, '4'
+            je rotar_antihorario
+            cmp al, '6'
+            je rotar_horario
+
+            jmp opcion_rotacion
+
         verificar_personalizacion:
-            mov rdi, msg_personalizacion ; pregunta si se desea personalizar
+            mov rdi, msg_simbolos ; pregunta si se desea personalizar
             mPuts
             mov rdi, input ; lee la respuesta
             mGets
@@ -193,7 +226,7 @@ section .text
 
             verificar_personalizacion_invalida:
 
-            mov rdi, msg_respuesta_invalida
+            mov rdi, msg_sibolos_invalido
             mPuts
             jmp verificar_personalizacion
 
@@ -230,7 +263,72 @@ section .text
 
         jmp game_loop
 
+
+    rotar_horario:
+        cmp byte[rotacion], 3
+        je reset_rotacion_horario
+
+        inc byte[rotacion]
+        jmp cargar_mapa
+
+        reset_rotacion_horario:
+        mov byte[rotacion], 0
+        jmp cargar_mapa
+
+    rotar_antihorario:
+        cmp byte[rotacion], 0
+        je reset_rotacion_antihorario
+
+        dec byte[rotacion]
+        jmp cargar_mapa
+
+        reset_rotacion_antihorario:
+        mov byte[rotacion], 3
+        jmp cargar_mapa
     
+    cargar_mapa:
+        cmp byte[rotacion], 0
+        je rotar_0
+        cmp byte[rotacion], 1
+        je rotar_1
+        cmp byte[rotacion], 2
+        je rotar_2
+        cmp byte[rotacion], 3
+        je rotar_3
+
+        rotar_0:
+            mov rdi, rotacion_0
+            jmp cargar_mapa_continuar
+        rotar_1:
+            mov rdi, rotacion_1
+            jmp cargar_mapa_continuar
+        rotar_2:
+            mov rdi, rotacion_2
+            jmp cargar_mapa_continuar
+        rotar_3:
+            mov rdi, rotacion_3
+            jmp cargar_mapa_continuar
+            
+        cargar_mapa_continuar:
+        mov rsi, modo_lectura
+        call fopen
+
+        ;TODO handle error
+
+        mov [fileHandle],rax
+
+        ;cargar matrix
+        mov rdi, matrix
+        mov rsi, 35
+        mov rdx, 18
+        mov rcx, [fileHandle]
+        call fread
+
+        mov rdi, [fileHandle]
+        call fclose
+
+        jmp opcion_rotacion
+
     personalizar_simbolos:
         
         leer_simbolo_zorro:
