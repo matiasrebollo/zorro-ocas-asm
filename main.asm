@@ -39,17 +39,17 @@ section .data
         db "El juego termina cuando el Zorro captura 12 ocas o queda acorralado.", 10 
         db "¡Que empiece la partida!", 10, 0
 
-    ;simbolos por defecto
+    ;personalizacion por defecto
     simbolo_zorro               db 'X', 0
     simbolo_oca                 db 'O', 0
 
     ;mensajes para la personalizacion
-    msg_personalizacion         db "Desea personalizar los simbolos del zorro y las ocas? (S/N):", 0
-    msg_respuesta_invalida      db "Respuesta inválida. Por favor, ingrese S o N.", 10, 0
-    msg_simbolo_invalido_zorro  db "Símbolo inválido. No puede ser '#' ni un espacio. Ingrese otro símbolo para el Zorro: ", 0
-    msg_simbolo_invalido_oca    db "Símbolo inválido. No puede ser '#' ni un espacio ni el mismo símbolo que el Zorro. Ingrese otro símbolo para las Ocas: ", 0
-    msg_simbolo_zorro           db "Ingrese el simbolo para el zorro:", 0
-    msg_simbolo_oca             db "Ingrese el simbolo para las ocas:", 0
+    msg_personalizacion         db "Querés personalizar los simbolos del zorro y las ocas? (S/N):", 0
+    msg_respuesta_invalida      db "Respuesta inválida. Por favor, ingresá S o N.", 10, 0
+    msg_simbolo_invalido_zorro  db "Símbolo inválido. No puede ser '#' ni un espacio. Ingresá otro símbolo para el Zorro: ", 0
+    msg_simbolo_invalido_oca    db "Símbolo inválido. No puede ser '#' ni un espacio ni el mismo símbolo que el Zorro. Ingresá otro símbolo para las Ocas: ", 0
+    msg_simbolo_zorro           db "Ingresá el simbolo para el zorro:", 0
+    msg_simbolo_oca             db "Ingresá el simbolo para las ocas:", 0
     personalizacion_si          db "s", 0
     personalizacion_no          db "n", 0
 
@@ -246,7 +246,9 @@ section .text
             cmp al, '#'
             je simbolo_zorro_invalido
             cmp al, ' '
-            je simbolo_zorro_invalido
+            jle simbolo_zorro_invalido
+            cmp al, 127
+            jge simbolo_zorro_invalido
             jmp validar_simbolo_zorro ;cambia el simbolo
 
         simbolo_zorro_invalido:
@@ -271,9 +273,11 @@ section .text
             cmp al, '#'
             je simbolo_oca_invalido
             cmp al, ' '
-            je simbolo_oca_invalido
+            jle simbolo_oca_invalido
             cmp al, byte [simbolo_zorro]
             je simbolo_oca_invalido
+            cmp al, 127
+            jge simbolo_oca_invalido
             jmp validar_simbolo_oca ; cambia el simbolo
 
         simbolo_oca_invalido:
