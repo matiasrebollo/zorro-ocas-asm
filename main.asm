@@ -324,6 +324,13 @@ section .text
         mov rcx, [fileHandle]
         call fread
 
+        ;cargar zorro_pos
+        mov rdi, zorro_pos
+        mov rsi, 4
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fread
+
         mov rdi, [fileHandle]
         call fclose
 
@@ -973,26 +980,42 @@ section .text
         je mover_oca_izquierda
         cmp al, '6'
         je mover_oca_derecha
+        cmp al, '8'
+        je mover_oca_arriba
 
         mov_invalido_oca: ; si se llega aca el movimiento escrito es invalido
         mov byte[error], 1
         jmp game_loop
 
         mover_oca_abajo:
+            cmp byte[rotacion],2
+            je mov_invalido_oca
             mov eax, [oca_pos]
             add eax, [mov_y]
             mov [oca_nueva_pos], eax ; nos guardamos la nueva posicion de la oca 
             jmp mover_oca
 
         mover_oca_izquierda:
+            cmp byte[rotacion],3
+            je mov_invalido_oca
             mov eax, [oca_pos]
             sub eax, [mov_x]
             mov [oca_nueva_pos], eax ; nos guardamos la nueva posicion de la oca
             jmp mover_oca
         
         mover_oca_derecha:
+            cmp byte[rotacion],1
+            je mov_invalido_oca
             mov eax, [oca_pos]
             add eax, [mov_x]
+            mov [oca_nueva_pos], eax ; nos guardamos la nueva posicion de la oca
+            jmp mover_oca
+
+        mover_oca_arriba:
+            cmp byte[rotacion],0
+            je mov_invalido_oca
+            mov eax, [oca_pos]
+            sub eax, [mov_y]
             mov [oca_nueva_pos], eax ; nos guardamos la nueva posicion de la oca
             jmp mover_oca
 
@@ -1213,3 +1236,4 @@ lowercase:
 ;   poder cerrar el juego en cualquier momento, en cada gets habría que checkar si input es igual a quit
 ;   después de elegir la oca debería poder volver atrás y elegir otra
 ;   si no hay save y cargás se rompe.
+;   despues de guardar se rompe creo
