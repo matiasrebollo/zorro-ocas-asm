@@ -50,6 +50,8 @@ section .data
     msg_simbolo_invalido_oca    db "Símbolo inválido. No puede ser '#' ni un espacio ni el mismo símbolo que el Zorro. Ingrese otro símbolo para las Ocas: ", 0
     msg_simbolo_zorro           db "Ingrese el simbolo para el zorro:", 0
     msg_simbolo_oca             db "Ingrese el simbolo para las ocas:", 0
+    personalizacion_si          db "s", 0
+    personalizacion_no          db "n", 0
 
     
     save_nombre                 db "save.bin", 0
@@ -164,14 +166,32 @@ section .text
         verificar_personalizacion:
             mov rdi, msg_personalizacion ; pregunta si se desea personalizar
             mPuts
-            mov rdi, respuesta_personalizacion ; lee la respuesta
+            mov rdi, input ; lee la respuesta
             mGets
 
-            mov al, byte[respuesta_personalizacion]
-            cmp al, 'S'
+            mov al, byte[input + 1]
+            cmp al, 0
+            jne verificar_personalizacion_invalida
+            
+            mov rsi, personalizacion_si
+            mov rdi, input
+            sub rcx, rcx
+            mov ecx, 1
+
+            call lowercase_cmp
+
             je personalizar_simbolos ; si S, personaliza simbolos
-            cmp al, 'N'
+
+            mov rsi, personalizacion_no
+            mov rdi, input
+            sub rcx, rcx
+            mov ecx, 1
+
+            call lowercase_cmp
+
             je game_loop ; si N, comienza el juego
+
+            verificar_personalizacion_invalida:
 
             mov rdi, msg_respuesta_invalida
             mPuts
@@ -216,12 +236,13 @@ section .text
         leer_simbolo_zorro:
             mov rdi, msg_simbolo_zorro ; pide simbolo
             mPuts
-            mov rdi, nuevo_simbolo_zorro ; lee simbolo
+            mov rdi, input ; lee simbolo
             mGets
 
-            mov al, byte[nuevo_simbolo_zorro] ; compara para chequear su validez
-            cmp byte [nuevo_simbolo_zorro+1], 0
+            mov al, byte[input + 1] ; compara para chequear su validez
+            cmp al, 0
             jne simbolo_zorro_invalido ; si ingreso mas de un caracter
+            mov al, byte[input]
             cmp al, '#'
             je simbolo_zorro_invalido
             cmp al, ' '
@@ -240,17 +261,18 @@ section .text
         leer_simbolo_oca:
             mov rdi, msg_simbolo_oca
             mPuts
-            mov rdi, nuevo_simbolo_oca
+            mov rdi, input
             mGets
 
-            mov al, byte [nuevo_simbolo_oca] ; compara para chequear su validez
-            cmp byte [nuevo_simbolo_oca+1], 0
+            mov al, byte [input + 1] ; compara para chequear su validez
+            cmp al, 0
             jne simbolo_oca_invalido ; si ingreso mas de un caracter
+            mov al, byte[input]
             cmp al, '#'
             je simbolo_oca_invalido
             cmp al, ' '
             je simbolo_oca_invalido
-            cmp al, byte [simbolo_oca]
+            cmp al, byte [simbolo_zorro]
             je simbolo_oca_invalido
             jmp validar_simbolo_oca ; cambia el simbolo
 
@@ -496,7 +518,7 @@ section .text
         mov al, byte[rdi]
         cmp al, '#'
         je validar_movimiento_false
-        cmp al, 'O'
+        cmp al, byte[simbolo_oca]
         je validar_movimiento_false
 
         validar_movimiento_true:
@@ -703,10 +725,11 @@ section .text
             
             cmp al, '#'
             je error_pared_zorro ; si hay pared no se puede mover
-            cmp al, 'O'
+            cmp al, byte[simbolo_oca]
             je comer_oca ; si hay oca es un caso a ver
 
-            mov byte[rdi], 'X' ;si no hay nada, movemos el zorro
+            mov al, byte[simbolo_zorro]
+            mov byte[rdi], al ;si no hay nada, movemos el zorro
             lea rdi, [matrix]
             add edi, [zorro_pos]
             mov byte[rdi], ' ' ; eliminamos nuestra antigua posicion
@@ -727,10 +750,11 @@ section .text
             mov al, byte[rdi]
             cmp al, '#'
             je no_puede_comer ; si hay pared no se puede comer
-            cmp al, 'O'
+            cmp al, byte[simbolo_oca]
             je no_puede_comer ; si hay oca no se puede comer
 
-            mov byte[rdi], 'X' ;movemos al zorro
+            mov al, byte[simbolo_zorro]
+            mov byte[rdi], al ;movemos al zorro
             lea rdi, [matrix]
             add edi, [zorro_nueva_pos]
             mov byte[rdi], ' ' ; eliminamos la oca
@@ -830,7 +854,7 @@ section .text
         lea rdi, [matrix]
         add edi, [oca_pos]
         mov al, byte[rdi]
-        cmp al, 'O'
+        cmp al, byte[simbolo_oca]
         jne pos_invalida
 
         mov byte[turno], 2
@@ -877,9 +901,9 @@ section .text
 
             cmp al, '#' ; si hay una pared no se puede
             je error_pared_oca
-            cmp al, 'O' ; si hay otra oca esta ocupada
+            cmp al, byte[simbolo_oca] ; si hay otra oca esta ocupada
             je casilla_ocupada
-            cmp al, 'X' ; si esta el zorro esta ocupada
+            cmp al, byte[simbolo_zorro] ; si esta el zorro esta ocupada
             je casilla_ocupada
 
             lea rdi, [matrix]
@@ -887,7 +911,8 @@ section .text
             mov byte[rdi], ' ' ; borramos la posicion antigua de la oca
             lea rdi, [matrix]
             add edi, [oca_nueva_pos]
-            mov byte[rdi], 'O' ; colocamos la oca en su nueva posicion
+            mov al, byte[simbolo_oca]
+            mov byte[rdi], al ; colocamos la oca en su nueva posicion
 
             jmp fin_turno_mover_oca
 
@@ -1085,3 +1110,4 @@ lowercase:
 ;   TODO
 ;   poder cerrar el juego en cualquier momento, en cada gets habría que checkar si input es igual a quit
 ;   después de elegir la oca debería poder volver atrás y elegir otra
+;   si no hay save y cargás se rompe.
