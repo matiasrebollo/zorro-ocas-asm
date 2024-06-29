@@ -1264,7 +1264,6 @@ lowercase:
 
 
 
-;   TODO
-;   poder cerrar el juego en cualquier momento, en cada gets habría que checkar si input es igual a quit
-;   después de elegir la oca debería poder volver atrás y elegir otra
+;   TODO:
 ;   si no hay save y cargás se rompe.
+;   guardar simbolos, rotacion, oca_arriba/abajo/izq/der
