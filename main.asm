@@ -1139,6 +1139,7 @@ section .text
         mov rdi, [fileHandle]
         call fclose
 
+        ret 
     cargar:
         mov rdi, save_nombre
         mov rsi, modo_lectura
@@ -1187,6 +1188,7 @@ section .text
         mov rdi, [fileHandle]
         call fclose
 
+        ret
 
     imprimir_stats_zorro:
         mov rdi, stats_zorro_1
@@ -1266,4 +1268,3 @@ lowercase:
 ;   poder cerrar el juego en cualquier momento, en cada gets habría que checkar si input es igual a quit
 ;   después de elegir la oca debería poder volver atrás y elegir otra
 ;   si no hay save y cargás se rompe.
-;   despues de guardar se rompe creo
