@@ -49,6 +49,11 @@ section .data
     rotacion_2                  db "mapas/2.bin", 0
     rotacion_3                  db "mapas/3.bin", 0
 
+    oca_arriba                  db '8', 0
+    oca_abajo                   db '2', 0
+    oca_izquierda               db '4', 0
+    oca_derecha                 db '6', 0
+
     ;mensajes para la personalizacion
     msg_simbolos                db "Querés personalizar los simbolos del zorro y las ocas? (S/N):", 0
     msg_sibolos_invalido        db "Respuesta inválida. Por favor, ingresá S o N.", 10, 0
@@ -114,11 +119,11 @@ section .data
 
     opciones_movimiento_oca:     
         db "+---+---+---+-----------------+-------------------+------------------+",10
-        db "|   | 8 |   |                       TURNO: OCAS                      |",10
+        db "|   | %s |   |                       TURNO: OCAS                      |",10
         db "+---+---+---+-----------------+-------------------+------------------+",10
-        db "| 4 |   | 6 |      Salir      |      Guardar      |      Cargar      |",10
+        db "| %s |   | %s |      Salir      |      Guardar      |      Cargar      |",10
         db "+---+---+---+-----------------+-------------------+------------------+",10
-        db "|   | 2 |   |%s|",10
+        db "|   | %s |   |%s|",10
         db "+---+---+---+-----------------+-------------------+------------------+",10,0
 
     msg_error_movimiento        db "Por favor, elegí un movimiento valido.                  ", 0
@@ -298,15 +303,31 @@ section .text
 
         rotar_0:
             mov rdi, rotacion_0
+            mov byte[oca_arriba], ' '
+            mov byte[oca_izquierda], '4'
+            mov byte[oca_derecha], '6'
+            mov byte[oca_abajo], '2'
             jmp cargar_mapa_continuar
         rotar_1:
             mov rdi, rotacion_1
+            mov byte[oca_arriba], '8'
+            mov byte[oca_izquierda], '4'
+            mov byte[oca_derecha], ' '
+            mov byte[oca_abajo], '2'
             jmp cargar_mapa_continuar
         rotar_2:
             mov rdi, rotacion_2
+            mov byte[oca_arriba], '8'
+            mov byte[oca_izquierda], '4'
+            mov byte[oca_derecha], '6'
+            mov byte[oca_abajo], ' '
             jmp cargar_mapa_continuar
         rotar_3:
             mov rdi, rotacion_3
+            mov byte[oca_arriba], '8'
+            mov byte[oca_izquierda], ' '
+            mov byte[oca_derecha], '6'
+            mov byte[oca_abajo], '2'
             jmp cargar_mapa_continuar
             
         cargar_mapa_continuar:
@@ -668,6 +689,15 @@ section .text
             mov rdi, opciones_movimiento_oca
             sub rsp, 8
             call seleccionar_mensaje
+            add rsp, 8
+            mov r9, rsi
+
+            mov rsi, oca_arriba
+            mov rdx, oca_izquierda
+            mov rcx, oca_derecha
+            mov r8, oca_abajo
+
+            sub rsp, 8
             call printf
             add rsp, 8
             jmp fin_imprimir
