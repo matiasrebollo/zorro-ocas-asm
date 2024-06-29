@@ -50,9 +50,9 @@ section .data
     rotacion_3                  db "mapas/3.bin", 0
 
     oca_arriba                  db '8', 0
-    oca_abajo                   db '2', 0
     oca_izquierda               db '4', 0
     oca_derecha                 db '6', 0
+    oca_abajo                   db '2', 0
 
     ;mensajes para la personalizacion
     msg_simbolos                db "Querés personalizar los simbolos del zorro y las ocas? (S/N):", 0
@@ -1101,6 +1101,20 @@ section .text
         mov rcx, [fileHandle]
         call fwrite
 
+        ;guardar simbolo_zorro
+        mov rdi, simbolo_zorro
+        mov rsi, 1
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fwrite
+
+        ;guardar simbolo_oca
+        mov rdi, simbolo_oca
+        mov rsi, 1
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fwrite
+
         ;guardar turno
         mov rdi, turno
         mov rsi, 1
@@ -1129,6 +1143,41 @@ section .text
         mov rcx, [fileHandle]
         call fwrite
 
+        ;guardar rotacion
+
+        mov rdi, rotacion
+        mov rsi, 1
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fwrite
+
+        ;guardar oca_arriba, oca_izquierda, oca_derecha, oca_abajo
+
+        mov rdi, oca_arriba
+        mov rsi, 1
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fwrite
+
+        mov rdi, oca_izquierda
+        mov rsi, 1
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fwrite
+
+        mov rdi, oca_derecha
+        mov rsi, 1
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fwrite
+
+        mov rdi, oca_abajo
+        mov rsi, 1
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fwrite
+
+        ; fin de linea
 
         mov rdi, fin_linea
         mov rsi, 1
@@ -1153,6 +1202,20 @@ section .text
         mov rdi, matrix
         mov rsi, 35
         mov rdx, 18
+        mov rcx, [fileHandle]
+        call fread
+
+        ;cargar simbolo_zorro
+        mov rdi, simbolo_zorro
+        mov rsi, 1
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fread
+
+        ;cargar simbolo_oca
+        mov rdi, simbolo_oca
+        mov rsi, 1
+        mov rdx, 1
         mov rcx, [fileHandle]
         call fread
 
@@ -1184,6 +1247,39 @@ section .text
         mov rcx, [fileHandle]
         call fread
 
+        ;cargar rotacion
+
+        mov rdi, rotacion
+        mov rsi, 1
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fread
+
+        ;cargar oca_arriba, oca_izquierda, oca_derecha, oca_abajo
+
+        mov rdi, oca_arriba
+        mov rsi, 1
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fread
+
+        mov rdi, oca_izquierda
+        mov rsi, 1
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fread
+
+        mov rdi, oca_derecha
+        mov rsi, 1
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fread
+
+        mov rdi, oca_abajo
+        mov rsi, 1
+        mov rdx, 1
+        mov rcx, [fileHandle]
+        call fread
 
         mov rdi, [fileHandle]
         call fclose
