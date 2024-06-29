@@ -93,6 +93,7 @@ section .data
                                      ; 3 error ocupada
                                      ; 4 error no_puede_comer
                                      ; 5 error_oca, (seleccion no valida).
+                                     ; 6 error_cargar
     
     msg_turno_zorro             db "Elegí en qué dirección mover al zorro.                  ", 0
     msg_turno_oca               db "Elegí la oca a mover. Ingresá columna y fila            ", 0
@@ -131,7 +132,7 @@ section .data
     msg_ocupada                 db "No podés moverte a una casilla ocupada.                 ", 0
     msg_no_puede_comer          db "No hay espacio para comer a esa oca.                    ", 0
     msg_error_oca               db "Inválido. Ingrese columna y fila sin espacios. Ej: C1   ", 0
-
+    msg_error_cargar            db "No hay ninguna partida guardada.                        ", 0
 
     ;fin juego
 
@@ -722,6 +723,8 @@ section .text
             je mensaje_comer
             cmp byte[error],5
             je mensaje_oca_invalida
+            cmp byte[error],6
+            je mensaje_error_cargar
             cmp byte[turno],0
             je mensaje_zorro
             cmp byte[turno],1
@@ -743,6 +746,9 @@ section .text
                 ret
             mensaje_oca_invalida:
                 mov rsi, msg_error_oca
+                ret
+            mensaje_error_cargar:
+                mov rsi, msg_error_cargar
                 ret
             mensaje_zorro:
                 mov rsi, msg_turno_zorro
@@ -1194,7 +1200,8 @@ section .text
         mov rsi, modo_lectura
         call fopen
 
-        ;TODO handle error
+        cmp rax,0
+        jle cargar_error
 
         mov [fileHandle],rax
 
@@ -1286,6 +1293,10 @@ section .text
 
         ret
 
+        cargar_error:
+        mov byte[error], 6
+        ret
+
     imprimir_stats_zorro:
         mov rdi, stats_zorro_1
         mov esi, dword[movimientos_zorro]
@@ -1361,5 +1372,6 @@ lowercase:
 
 
 ;   TODO:
-;   si no hay save y cargás se rompe.
-;   guardar simbolos, rotacion, oca_arriba/abajo/izq/der
+    ;handle errores al leer archivos 
+    ;if error al guardar decirle que intente de nuevo
+    ;if error al leer mapas decirle que compruebe la integridad o descargue el juego de nuevo o algo así
