@@ -20,38 +20,13 @@ Este es un juego de estrategia clásico llamado "El Zorro y las Ocas", implement
 ### Archivos
 
 1. `main.asm`
-2. `game.asm`
 3. `io.inc`
-
-### Descripción de los Archivos
-
-#### `main.asm`
-
-Este archivo contiene el punto de entrada del programa y maneja el ciclo principal del juego, incluida la captura y verificación del input del usuario y la visualización del tablero.
-
-- **Funcionalidad Principal:**
-  - Captura y verificación del input del usuario.
-  - Bucle principal del juego.
-  - Visualización del tablero.
-
-#### `game.asm`
-
-Este archivo contiene la lógica del juego, incluyendo los movimientos del zorro y las ocas, las capturas y la verificación de condiciones de victoria.
-
-- **Funcionalidad Principal:**
-  - Movimiento del zorro.
-  - Movimiento de las ocas.
-  - Lógica de captura.
-  - Verificación de condiciones de victoria.
-
-#### `io.inc`
-
-Este archivo contiene macros y funciones auxiliares para la entrada y salida (I/O).
 
 ## Compilación y Ejecución
 
 Para compilar y ejecutar el proyecto, seguir los siguientes pasos:
 
-nasm NOMBRE.asm -f elf64
-gcc nombre.o -no-pie -o nombre
-./nombre
+```bash
+nasm main.asm -f elf64
+gcc main.o -no-pie -o main.out
+./main.out```
