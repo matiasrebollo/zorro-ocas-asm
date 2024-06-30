@@ -58,6 +58,7 @@ section .data
     msg_simbolos                db "Querés personalizar los simbolos del zorro y las ocas? (S/N):", 0
     msg_sibolos_invalido        db "Respuesta inválida. Por favor, ingresá S o N.", 10, 0
     msg_rotacion                db "Querés rotar el tablero? Ingresá 6 para girar en sentido horario o 4 para girar en sentido antihorario. De lo contrario, presioná enter.", 0
+    msg_rotacion_invalida       db "Porfavor, para rotar, las opciones validas son 4, 6 o enter(vacio).", 0
     msg_simbolo_invalido_zorro  db "Símbolo inválido. No puede ser '#' ni un espacio. Ingresá otro símbolo para el Zorro: ", 0
     msg_simbolo_invalido_oca    db "Símbolo inválido. No puede ser '#' ni un espacio ni el mismo símbolo que el Zorro. Ingresá otro símbolo para las Ocas: ", 0
     msg_simbolo_zorro           db "Ingresá el simbolo para el zorro:", 0
@@ -133,11 +134,13 @@ section .data
     msg_no_puede_comer          db "No hay espacio para comer a esa oca.                    ", 0
     msg_error_oca               db "Inválido. Ingrese columna y fila sin espacios. Ej: C1   ", 0
     msg_error_cargar            db "No hay ninguna partida guardada.                        ", 0
+    msg_error_cargar_matriz     db "Error al cargar el mapa, por favor reinicie el juego    ", 0
+    msg_error_guardar           db "Error al guardar la partida, intente nuevamente!        ", 0
 
     ;fin juego
 
-    msg_gana_zorro              db "Gana zorro.",10,0
-    msg_gana_ocas               db "Gana ocas.",10,0
+    msg_gana_zorro              db "Gano el zorro, felicitaciones!!!",10,0
+    msg_gana_ocas               db "Las ocas han ganado, bien jugado!!!",10,0
 
     movimientos_zorro   times 9 dd 0 ;historial de movimientos del zorro [abajoizquierda, abajo, abajoderecha, izquierda, pasar_turno?, derecha, arribaizquierda, arriba, arribaderecha]
     
@@ -192,6 +195,8 @@ section .text
 
             mov al, byte[input + 1]
             cmp al, 0
+            mov rdi, msg_rotacion_invalida
+            mPuts
             jne opcion_rotacion
 
             mov al, byte[input]
@@ -335,7 +340,8 @@ section .text
         mov rsi, modo_lectura
         call fopen
 
-        ;TODO handle error
+        cmp rax,0
+        jle cargar_mapa_error
 
         mov [fileHandle],rax
 
@@ -356,6 +362,12 @@ section .text
         mov rdi, [fileHandle]
         call fclose
 
+        jmp opcion_rotacion
+
+        cargar_mapa_error:
+        mov byte[error], 6
+        mov rdi, msg_error_cargar_matriz
+        mPuts
         jmp opcion_rotacion
 
     personalizar_simbolos:
@@ -1096,7 +1108,8 @@ section .text
         mov rsi, modo_escritura
         call fopen
 
-        ;TODO handle error
+        cmp rax,0
+        jle guardar_error
 
         mov [fileHandle],rax
 
@@ -1194,7 +1207,14 @@ section .text
         mov rdi, [fileHandle]
         call fclose
 
-        ret 
+        ret
+
+        guardar_error:
+        mov byte[error], 6
+        mov rdi, msg_error_guardar
+        mPuts
+        ret
+
     cargar:
         mov rdi, save_nombre
         mov rsi, modo_lectura
