@@ -139,8 +139,8 @@ section .data
 
     ;fin juego
 
-    msg_gana_zorro              db "Gano el zorro, felicitaciones!!!",10,0
-    msg_gana_ocas               db "Las ocas han ganado, bien jugado!!!",10,0
+    msg_gana_zorro              db "Ha ganado el zorro!!! Felicitaciones, bien jugado!!!",10,0
+    msg_gana_ocas               db "Las ocas han ganado!!!Felicitaciones, bien jugado!!!",10,0
 
     movimientos_zorro   times 9 dd 0 ;historial de movimientos del zorro [abajoizquierda, abajo, abajoderecha, izquierda, pasar_turno?, derecha, arribaizquierda, arriba, arribaderecha]
     
@@ -195,8 +195,6 @@ section .text
 
             mov al, byte[input + 1]
             cmp al, 0
-            mov rdi, msg_rotacion_invalida
-            mPuts
             jne opcion_rotacion
 
             mov al, byte[input]
