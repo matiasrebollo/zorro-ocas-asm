@@ -139,8 +139,41 @@ section .data
 
     ;fin juego
 
-    msg_gana_zorro              db "Ha ganado el zorro!!! Felicitaciones, bien jugado!!!",10,0
-    msg_gana_ocas               db "Las ocas han ganado!!!Felicitaciones, bien jugado!!!",10,0
+    msg_gana_zorro              db "Ha ganado el zorro!!! Felicitaciones, bien jugado!!!",10
+                                db "      ██              ██      ",10 
+                                db "    ██  ██          ██  ██    ",10 
+                                db "    ██  ░░██      ██░░  ██    ",10 
+                                db "    ██  ░░░░██████░░░░  ██    ",10 
+                                db "    ██  ████░░░░░░████  ██    ",10 
+                                db "    ████░░░░░░░░░░░░░░████    ",10 
+                                db "    ██░░░░░░░░░░░░░░░░░░██    ",10 
+                                db "    ██░░██░░░░░░░░░░██░░██    ",10 
+                                db "  ██░░░░██░░██████░░██░░░░██  ",10 
+                                db "  ██░░░░░░░░  ██  ░░░░░░░░██  ",10 
+                                db "██░░░░░░░░          ░░░░░░░░██",10 
+                                db "  ████                  ████  ",10 
+                                db "      ██████████████████      ",10,0
+    msg_gana_ocas               db "Las ocas han ganado!!!Felicitaciones, bien jugado!!!",10
+                                db "                                  ██████          ",10
+                                db "                              ████      ████      ",10
+                                db "                            ██      ██      ██    ",10
+                                db "                            ██      ██      ██    ",10
+                                db "                            ██          ▒▒▒▒████  ",10
+                                db "                            ██    ██  ▒▒▒▒▒▒▒▒▒▒██",10
+                                db "                            ██    ██████████████  ",10
+                                db "                            ██    ██              ",10
+                                db "                            ██    ██              ",10
+                                db "                            ██    ██              ",10
+                                db "                            ██    ██              ",10
+                                db "                            ██    ██              ",10
+                                db "          ████████████████████    ██              ",10
+                                db "        ██                  ██    ██              ",10
+                                db "  ██████                          ██              ",10
+                                db "██                              ██                ",10
+                                db "  ██                          ██                  ",10
+                                db "    ████                      ██                  ",10
+                                db "        ██                ████                    ",10
+                                db "          ████████████████                        ",10,0
 
     movimientos_zorro   times 9 dd 0 ;historial de movimientos del zorro [abajoizquierda, abajo, abajoderecha, izquierda, pasar_turno?, derecha, arribaizquierda, arriba, arribaderecha]
     
