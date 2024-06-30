@@ -49,7 +49,7 @@ section .data
     rotacion_2                  db "mapas/2.bin", 0
     rotacion_3                  db "mapas/3.bin", 0
 
-    oca_arriba                  db '8', 0
+    oca_arriba                  db ' ', 0
     oca_izquierda               db '4', 0
     oca_derecha                 db '6', 0
     oca_abajo                   db '2', 0
