@@ -463,7 +463,7 @@ section .text
 
     actualizar_simbolos_matriz:
         lea r8, [matrix] ; apunta a la matriz
-        mov rcx, 685 ; tamano de la matriz en caracteres
+        mov rcx, 630 ; tamano de la matriz en caracteres
         
         recorrer_bucle:
             mov al, byte[r8] ; lee un caracter
