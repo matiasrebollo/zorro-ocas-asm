@@ -1,4 +1,10 @@
 # Organización del Computador - TP1
+
+Integrantes:
+- Mateo Cabrera Rodriguez
+- Matias Gabriel Rebollo
+- Tomas Garcia Alimena
+
 # El Zorro y las Ocas
 
 ## Descripción
